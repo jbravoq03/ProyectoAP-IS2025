@@ -7,9 +7,9 @@ CORS(app)
 
 app.register_blueprint(laboratorios_bp)
 
-@app.route('/')
-def hello_world():  # put application's code here
-    return 'Hello World!'
+@app.route('/status')
+def hello_world():
+    return 'API funcionando'
 
 
 
