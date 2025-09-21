@@ -14,12 +14,13 @@ def conectarBD():
     supabase: Client = create_client(url, key)
     return supabase
 
-def createLaboratorio(pIdDptoCar, pIdInterno, pNombre, pUbicacion, pDescripcion):
+def createLaboratorio(pIdDptoCar, pIdUsrLab, pIdInterno, pNombre, pUbicacion, pDescripcion):
 
     supabase = conectarBD()
     response = (
         supabase.table(tabla)
         .insert({"idDptoCar": pIdDptoCar,
+                 "idUsrLab": pIdUsrLab,
                  "idInterno": pIdInterno,
                  "nombre": pNombre,
                  "ubicacion": pUbicacion,
@@ -49,12 +50,13 @@ def readOneLaboratorio(pIdLab):
     )
     return response
 
-def updateLaboratorio(pIdLab, pIdDptoCar, pIdInterno, pNombre, pUbicacion, pDescripcion):
+def updateLaboratorio(pIdLab, pIdDptoCar, pIdUsrLab, pIdInterno, pNombre, pUbicacion, pDescripcion):
 
     supabase = conectarBD()
     response = (
         supabase.table(tabla)
         .update({"idDptoCar": pIdDptoCar,
+                 "idUsrLab": pIdUsrLab,
                  "idInterno": pIdInterno,
                  "nombre": pNombre,
                  "ubicacion": pUbicacion,
