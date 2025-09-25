@@ -15,64 +15,80 @@ def conectarBD():
     return supabase
 
 def createPoliticasLab(pIdLab, pReqAcad, pReqSeg, pHorarioAbre, pHorarioCierre, pCapacidadMax):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .insert({"idLab": pIdLab,
-                 "reqAcad": pReqAcad,
-                 "reqSeg": pReqSeg,
-                 "horarioAbre": pHorarioAbre,
-                 "horarioCierre": pHorarioCierre,
-                 "capacidadMax": pCapacidadMax})
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .insert({"idLab": pIdLab,
+                     "reqAcad": pReqAcad,
+                     "reqSeg": pReqSeg,
+                     "horarioAbre": pHorarioAbre,
+                     "horarioCierre": pHorarioCierre,
+                     "capacidadMax": pCapacidadMax})
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readPoliticasLab():
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readOnePoliticasLab(pIdPolit):
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .eq("idPolit", pIdPolit)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .eq("idPolit", pIdPolit)
-        .execute()
-    )
-    return response
 
 def updatePoliticasLab(pIdPolit, pIdLab, pReqAcad, pReqSeg, pHorarioAbre, pHorarioCierre, pCapacidadMax):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .update({"idLab": pIdLab,
-                 "reqAcad": pReqAcad,
-                 "reqSeg": pReqSeg,
-                 "horarioAbre": pHorarioAbre,
-                 "horarioCierre": pHorarioCierre,
-                 "capacidadMax": pCapacidadMax})
-        .eq("idPolit", pIdPolit)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .update({"idLab": pIdLab,
+                     "reqAcad": pReqAcad,
+                     "reqSeg": pReqSeg,
+                     "horarioAbre": pHorarioAbre,
+                     "horarioCierre": pHorarioCierre,
+                     "capacidadMax": pCapacidadMax})
+            .eq("idPolit", pIdPolit)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def deletePoliticasLab(pIdPolit):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .delete()
-        .eq("idPolit", pIdPolit)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .delete()
+            .eq("idPolit", pIdPolit)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501

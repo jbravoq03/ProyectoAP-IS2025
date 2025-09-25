@@ -15,60 +15,75 @@ def conectarBD():
     return supabase
 
 def createRecFijo(pIdRec, pCodInv, pEstado, pultMante):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .insert({"idRec": pIdRec,
-                 "codInv": pCodInv,
-                 "estado": pEstado,
-                 "ultMante": pultMante})
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .insert({"idRec": pIdRec,
+                     "codInv": pCodInv,
+                     "estado": pEstado,
+                     "ultMante": pultMante})
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readRecFijo():
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readOneRecFijo(pIdFijo):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .eq("idFijo", pIdFijo)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .eq("idFijo", pIdFijo)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def updateRecFijo(pIdFijo, pIdRec, pCodInv, pEstado, pultMante):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .update({"idRec": pIdRec,
-                 "codInv": pCodInv,
-                 "estado": pEstado,
-                 "ultMante": pultMante})
-        .eq("idFijo", pIdFijo)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .update({"idRec": pIdRec,
+                     "codInv": pCodInv,
+                     "estado": pEstado,
+                     "ultMante": pultMante})
+            .eq("idFijo", pIdFijo)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def deleteRecFijo(pIdFijo):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .delete()
-        .eq("idFijo", pIdFijo)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .delete()
+            .eq("idFijo", pIdFijo)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501

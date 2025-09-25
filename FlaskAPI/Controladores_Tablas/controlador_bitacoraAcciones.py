@@ -15,63 +15,78 @@ def conectarBD():
     return supabase
 
 def createBitAcciones(pIdUsuario, pAccion, pDescripcion, pFecha):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .insert({"idUsuario": pIdUsuario,
-                 "accion": pAccion,
-                 "descripcion": pDescripcion,
-                 "fecha": pFecha
-                 })
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .insert({"idUsuario": pIdUsuario,
+                     "accion": pAccion,
+                     "descripcion": pDescripcion,
+                     "fecha": pFecha
+                     })
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readBitAcciones():
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readOneBitAcciones(pIdUsuario):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .eq("idUsuario", pIdUsuario)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .eq("idUsuario", pIdUsuario)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def updateBitAcciones(pIdBitac, pIdUsuario, pAccion, pDescripcion, pFecha):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .update({"idUsuario": pIdUsuario,
-                 "accion": pAccion,
-                 "descripcion": pDescripcion,
-                 "fecha": pFecha
-                 })
-        .eq("idBitac", pIdBitac)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .update({"idUsuario": pIdUsuario,
+                     "accion": pAccion,
+                     "descripcion": pDescripcion,
+                     "fecha": pFecha
+                     })
+            .eq("idBitac", pIdBitac)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def deleteBitAcciones(pIdBitac):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .delete()
-        .eq("idBitac", pIdBitac)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .delete()
+            .eq("idBitac", pIdBitac)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 

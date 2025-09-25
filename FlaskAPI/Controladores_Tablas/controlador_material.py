@@ -15,62 +15,77 @@ def conectarBD():
     return supabase
 
 def createMaterial(pIdRec, pCantidad, pMedida, pReorden):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .insert({"idRec": pIdRec,
-                 "cantidad": pCantidad,
-                 "medida": pMedida,
-                 "reorden": pReorden})
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .insert({"idRec": pIdRec,
+                     "cantidad": pCantidad,
+                     "medida": pMedida,
+                     "reorden": pReorden})
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readMaterial():
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readOneMaterial(pIdMat):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .eq("idMat", pIdMat)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .eq("idMat", pIdMat)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def updateMaterial(pIdMat, pIdRec, pCantidad, pMedida, pReorden):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .update({"idRec": pIdRec,
-                 "cantidad": pCantidad,
-                 "medida": pMedida,
-                 "reorden": pReorden})
-        .eq("idMat", pIdMat)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .update({"idRec": pIdRec,
+                     "cantidad": pCantidad,
+                     "medida": pMedida,
+                     "reorden": pReorden})
+            .eq("idMat", pIdMat)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def deleteMaterial(pIdMat):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .delete()
-        .eq("idMat", pIdMat)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .delete()
+            .eq("idMat", pIdMat)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 

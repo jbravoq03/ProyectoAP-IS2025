@@ -15,64 +15,79 @@ def conectarBD():
     return supabase
 
 def createRecursos(pIdLab, pNombre, pImagen, pTipo, pDescripcion, pEstado):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .insert({"idLab": pIdLab,
-                 "nombre": pNombre,
-                 "imagen": pImagen,
-                 "tipo": pTipo,
-                 "descripcion": pDescripcion,
-                 "estado": pEstado})
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .insert({"idLab": pIdLab,
+                     "nombre": pNombre,
+                     "imagen": pImagen,
+                     "tipo": pTipo,
+                     "descripcion": pDescripcion,
+                     "estado": pEstado})
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readRecursos():
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readOneRecursos(pIdRec):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .eq("idRec", pIdRec)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .eq("idRec", pIdRec)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def updateRecursos(pIdRecurso, pIdLab, pNombre, pImagen, pTipo, pDescripcion, pEstado):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .update({"idLab": pIdLab,
-                 "nombre": pNombre,
-                 "imagen": pImagen,
-                 "tipo": pTipo,
-                 "descripcion": pDescripcion,
-                 "estado": pEstado})
-        .eq("idRec", pIdRecurso)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .update({"idLab": pIdLab,
+                     "nombre": pNombre,
+                     "imagen": pImagen,
+                     "tipo": pTipo,
+                     "descripcion": pDescripcion,
+                     "estado": pEstado})
+            .eq("idRec", pIdRecurso)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def deleteRecursos(pIdRecurso):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .delete()
-        .eq("idRec", pIdRecurso)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .delete()
+            .eq("idRec", pIdRecurso)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501

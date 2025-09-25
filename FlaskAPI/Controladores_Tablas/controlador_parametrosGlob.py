@@ -15,58 +15,73 @@ def conectarBD():
     return supabase
 
 def createParametrosGlob(pNombre, pValor, pDescrpcion):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .insert({"nombre": pNombre,
-                 "valor": pValor,
-                 "descripcion": pDescrpcion})
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .insert({"nombre": pNombre,
+                     "valor": pValor,
+                     "descripcion": pDescrpcion})
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readParametrosGlob():
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readOneParametrosGlob(pIdParam):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .eq("idParam", pIdParam)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .eq("idParam", pIdParam)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def updateParametrosGlob(pIdParam, pNombre, pValor, pDescrpcion):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .update({"nombre": pNombre,
-                 "valor": pValor,
-                 "descripcion": pDescrpcion})
-        .eq("idParam", pIdParam)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .update({"nombre": pNombre,
+                     "valor": pValor,
+                     "descripcion": pDescrpcion})
+            .eq("idParam", pIdParam)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def deleteParametrosGlob(pIdParam):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .delete()
-        .eq("idParam", pIdParam)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .delete()
+            .eq("idParam", pIdParam)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501

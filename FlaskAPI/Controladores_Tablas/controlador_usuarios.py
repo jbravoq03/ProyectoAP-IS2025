@@ -16,68 +16,104 @@ def conectarBD():
 
 def createUsuarios(pIdRol, pIdDc, pIdInsti, pCorreoInsti, pNombre, pTelefono, pContrasena):
 
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .insert({"idRol": pIdRol,
-                 "idDC": pIdDc,
-                 "idInsti": pIdInsti,
-                 "correoInsti": pCorreoInsti,
-                 "nombre": pNombre,
-                 "telefono": pTelefono,
-                 "contrasena": pContrasena})
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .insert({"idRol": pIdRol,
+                     "idDC": pIdDc,
+                     "idInsti": pIdInsti,
+                     "correoInsti": pCorreoInsti,
+                     "nombre": pNombre,
+                     "telefono": pTelefono,
+                     "contrasena": pContrasena})
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readUsuarios():
 
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readOneUsuarios(pIdUsr):
 
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .eq("idUsr", pIdUsr)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .eq("idUsr", pIdUsr)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def updateUsuarios(pIdUsr, pIdRol, pIdDc, pIdInsti, pCorreoInsti, pNombre, pTelefono, pContrasena):
 
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .update({"idRol": pIdRol,
-                 "idDC": pIdDc,
-                 "idInsti": pIdInsti,
-                 "correoInsti": pCorreoInsti,
-                 "nombre": pNombre,
-                 "telefono": pTelefono,
-                 "contrasena": pContrasena})
-        .eq("idUsr", pIdUsr)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .update({"idRol": pIdRol,
+                     "idDC": pIdDc,
+                     "idInsti": pIdInsti,
+                     "correoInsti": pCorreoInsti,
+                     "nombre": pNombre,
+                     "telefono": pTelefono,
+                     "contrasena": pContrasena})
+            .eq("idUsr", pIdUsr)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def deleteUsuarios(pIdUsr):
 
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .delete()
-        .eq("idUsr", pIdUsr)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .delete()
+            .eq("idUsr", pIdUsr)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def iniciarSesion(pCorreo, pContrasena):
-    pass
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .eq("correoInsti", pCorreo)
+            .eq("contrasena", pContrasena)
+            .execute()
+        )
+        if response.data:
+            return True
+        else:
+            return False
+
+    except Exception as error:
+        print(error)
+        return 501

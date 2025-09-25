@@ -15,66 +15,81 @@ def conectarBD():
     return supabase
 
 def createLaboratorio(pIdDptoCar, pIdUsrLab, pIdInterno, pNombre, pUbicacion, pDescripcion):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .insert({"idDptoCar": pIdDptoCar,
-                 "idUsrLab": pIdUsrLab,
-                 "idInterno": pIdInterno,
-                 "nombre": pNombre,
-                 "ubicacion": pUbicacion,
-                 "descripcion": pDescripcion})
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .insert({"idDptoCar": pIdDptoCar,
+                     "idUsrLab": pIdUsrLab,
+                     "idInterno": pIdInterno,
+                     "nombre": pNombre,
+                     "ubicacion": pUbicacion,
+                     "descripcion": pDescripcion})
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readLaboratorio():
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readOneLaboratorio(pIdLab):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .eq("idLab", pIdLab)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .eq("idLab", pIdLab)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def updateLaboratorio(pIdLab, pIdDptoCar, pIdUsrLab, pIdInterno, pNombre, pUbicacion, pDescripcion):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .update({"idDptoCar": pIdDptoCar,
-                 "idUsrLab": pIdUsrLab,
-                 "idInterno": pIdInterno,
-                 "nombre": pNombre,
-                 "ubicacion": pUbicacion,
-                 "descripcion": pDescripcion})
-        .eq("idLab", pIdLab)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .update({"idDptoCar": pIdDptoCar,
+                     "idUsrLab": pIdUsrLab,
+                     "idInterno": pIdInterno,
+                     "nombre": pNombre,
+                     "ubicacion": pUbicacion,
+                     "descripcion": pDescripcion})
+            .eq("idLab", pIdLab)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def deleteLaboratorio(pIdLab):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .delete()
-        .eq("idLab", pIdLab)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .delete()
+            .eq("idLab", pIdLab)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 

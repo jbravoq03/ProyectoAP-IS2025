@@ -15,58 +15,73 @@ def conectarBD():
     return supabase
 
 def createResponsables(pIdUsr, pIdLab, pCargo):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .insert({"idUsr": pIdUsr,
-                 "idLab": pIdLab,
-                 "cargo": pCargo})
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .insert({"idUsr": pIdUsr,
+                     "idLab": pIdLab,
+                     "cargo": pCargo})
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readResponsables():
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readOneResponsables(pIdResp):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .eq("idResp", pIdResp)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .eq("idResp", pIdResp)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def updateResponsables(pIdResp, pIdUsr, pIdLab, pCargo):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .update({"idUsr": pIdUsr,
-                 "idLab": pIdLab,
-                 "cargo": pCargo})
-        .eq("idResp", pIdResp)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .update({"idUsr": pIdUsr,
+                     "idLab": pIdLab,
+                     "cargo": pCargo})
+            .eq("idResp", pIdResp)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def deleteResponsables(pIdResp):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .delete()
-        .eq("idResp", pIdResp)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .delete()
+            .eq("idResp", pIdResp)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501

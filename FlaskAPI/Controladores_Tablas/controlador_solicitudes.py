@@ -15,68 +15,83 @@ def conectarBD():
     return supabase
 
 def createUsuarios(pIdLab, pIdRec, pIdUsr, pFechaSoli, pEstado, pMotivo, pAdjunto, pFechaResp):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .insert({"idLab": pIdLab,
-                 "idRec": pIdRec,
-                 "idUsr": pIdUsr,
-                 "fechaSoli": pFechaSoli,
-                 "estado": pEstado,
-                 "motivo": pMotivo,
-                 "adjunto": pAdjunto,
-                 "fechaResp": pFechaResp})
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .insert({"idLab": pIdLab,
+                     "idRec": pIdRec,
+                     "idUsr": pIdUsr,
+                     "fechaSoli": pFechaSoli,
+                     "estado": pEstado,
+                     "motivo": pMotivo,
+                     "adjunto": pAdjunto,
+                     "fechaResp": pFechaResp})
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readUsuarios():
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readOneUsuarios(pIdSolic):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .eq("idSolic", pIdSolic)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .eq("idSolic", pIdSolic)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def updateUsuarios(pIdSolic, pIdLab, pIdRec, pIdUsr, pFechaSoli, pEstado, pMotivo, pAdjunto, pFechaResp):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .update({"idLab": pIdLab,
-                 "idRec": pIdRec,
-                 "idUsr": pIdUsr,
-                 "fechaSoli": pFechaSoli,
-                 "estado": pEstado,
-                 "motivo": pMotivo,
-                 "adjunto": pAdjunto,
-                 "fechaResp": pFechaResp})
-        .eq("idSolic", pIdSolic)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .update({"idLab": pIdLab,
+                     "idRec": pIdRec,
+                     "idUsr": pIdUsr,
+                     "fechaSoli": pFechaSoli,
+                     "estado": pEstado,
+                     "motivo": pMotivo,
+                     "adjunto": pAdjunto,
+                     "fechaResp": pFechaResp})
+            .eq("idSolic", pIdSolic)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def deleteUsuarios(pIdSolic):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .delete()
-        .eq("idSolic", pIdSolic)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .delete()
+            .eq("idSolic", pIdSolic)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
