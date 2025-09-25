@@ -32,11 +32,14 @@ def create_roles():
     # Creacion del rol en la BD
     respuesta = createRoles(nombre)
 
-    # Se convierte la respuesta en un JSON
-    resp = jsonify({
-        "data": respuesta.data,
-        "count": getattr(respuesta, "count", None)
-    })
+    if respuesta != 501:
+        # Se convierte la respuesta en un JSON
+        resp = jsonify({
+            "data": respuesta.data,
+            "count": getattr(respuesta, "count", None)
+        })
+    else:
+        resp = "Error en la BD"
 
     # Retorno de la respuesta
     return resp
@@ -47,10 +50,13 @@ def read_roles():
     # Lectura de los roles en la BD
     respuesta = readRoles()
 
-    # Se convierte la respuesta en un JSON
-    resp = jsonify({
-        "data": respuesta.data
-    })
+    if respuesta != 501:
+        # Se convierte la respuesta en un JSON
+        resp = jsonify({
+            "data": respuesta.data
+        })
+    else:
+        resp = "Error en la BD"
 
     # Retorno de la respuesta
     return resp
@@ -65,10 +71,13 @@ def readUnique_roles():
     # Lectura de un rol en la BD
     respuesta = readOneRoles(idRol)
 
-    # Se convierte la respuesta en un JSON
-    resp = jsonify({
-        "data": respuesta.data
-    })
+    if respuesta != 501:
+        # Se convierte la respuesta en un JSON
+        resp = jsonify({
+            "data": respuesta.data
+        })
+    else:
+        resp = "Error en la BD"
 
     # Retorno de la respuesta
     return resp
@@ -84,11 +93,14 @@ def update_roles():
     #Se modifica el rol en la BD
     respuesta = updateRoles(idRol, nombre)
 
-    # Se convierte la respuesta en un JSON
-    resp = jsonify({
-        "data": respuesta.data,
-        "count": getattr(respuesta, "count", None)
-    })
+    if respuesta != 501:
+        # Se convierte la respuesta en un JSON
+        resp = jsonify({
+            "data": respuesta.data,
+            "count": getattr(respuesta, "count", None)
+        })
+    else:
+        resp = "Error en la BD"
 
     # Retorno de la respuesta
     return resp
@@ -103,11 +115,14 @@ def delete_roles():
     #Se elimina el rol en la BD
     respuesta = deleteRoles(idRol)
 
-    # Se convierte la respuesta en un JSON
-    resp = jsonify({
-        "data": respuesta.data,
-        "count": getattr(respuesta, "count", None)
-    })
+    if respuesta != 501:
+        # Se convierte la respuesta en un JSON
+        resp = jsonify({
+            "data": respuesta.data,
+            "count": getattr(respuesta, "count", None)
+        })
+    else:
+        resp = "Error en la BD"
 
     # Retorno de la respuesta
     return resp
@@ -132,11 +147,14 @@ def create_dptocar():
     # Creacion del departamento/carrera en la BD
     respuesta = createDptoCarrera(nombre)
 
-    # Se convierte la respuesta en un JSON
-    resp = jsonify({
-        "data": respuesta.data,
-        "count": getattr(respuesta, "count", None)
-    })
+    if respuesta != 501:
+        # Se convierte la respuesta en un JSON
+        resp = jsonify({
+            "data": respuesta.data,
+            "count": getattr(respuesta, "count", None)
+        })
+    else:
+        resp = "Error en la BD"
 
     # Retorno de la respuesta
     return resp
@@ -147,10 +165,13 @@ def read_dptocar():
     # Lectura de los departamentos/carreras en la BD
     respuesta = readDptoCarrera()
 
-    # Se convierte la respuesta en un JSON
-    resp = jsonify({
-        "data": respuesta.data
-    })
+    if respuesta != 501:
+        # Se convierte la respuesta en un JSON
+        resp = jsonify({
+            "data": respuesta.data
+        })
+    else:
+        resp = "Error en la BD"
 
     # Retorno de la respuesta
     return resp
@@ -165,10 +186,13 @@ def readUnique_dptocar():
     # Lectura de un departamento/carrera en la BD
     respuesta = readOneDptoCarrera(idDc)
 
-    # Se convierte la respuesta en un JSON
-    resp = jsonify({
-        "data": respuesta.data
-    })
+    if respuesta != 501:
+        # Se convierte la respuesta en un JSON
+        resp = jsonify({
+            "data": respuesta.data
+        })
+    else:
+        resp = "Error en la BD"
 
     # Retorno de la respuesta
     return resp
@@ -184,11 +208,14 @@ def update_dptocar():
     #Se modifica el departamento/carrera en la BD
     respuesta = updateDptoCarrera(idDc, nombre)
 
-    # Se convierte la respuesta en un JSON
-    resp = jsonify({
-        "data": respuesta.data,
-        "count": getattr(respuesta, "count", None)
-    })
+    if respuesta != 501:
+        # Se convierte la respuesta en un JSON
+        resp = jsonify({
+            "data": respuesta.data,
+            "count": getattr(respuesta, "count", None)
+        })
+    else:
+        resp = "Error en la BD"
 
     # Retorno de la respuesta
     return resp
@@ -203,11 +230,14 @@ def delete_dptocar():
     #Se elimina el departamento/carrera en la BD
     respuesta = deleteDptoCarrera(idDc)
 
-    # Se convierte la respuesta en un JSON
-    resp = jsonify({
-        "data": respuesta.data,
-        "count": getattr(respuesta, "count", None)
-    })
+    if respuesta != 501:
+        # Se convierte la respuesta en un JSON
+        resp = jsonify({
+            "data": respuesta.data,
+            "count": getattr(respuesta, "count", None)
+        })
+    else:
+        resp = "Error en la BD"
 
     # Retorno de la respuesta
     return resp
