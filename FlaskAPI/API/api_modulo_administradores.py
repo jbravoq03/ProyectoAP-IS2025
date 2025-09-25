@@ -7,7 +7,7 @@ administradores_bp = Blueprint('administradores',
                             __name__,
                             url_prefix='/administradores')
 
-#Comprobacion de estado de los endpoints
+#Comprobacion de estado del API
 @administradores_bp.route('/status', methods=['GET'])
 def statusAPIAdministradores():
     return "¡API de administradores funcionando!"
