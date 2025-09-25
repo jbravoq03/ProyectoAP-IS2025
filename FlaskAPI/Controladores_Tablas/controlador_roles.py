@@ -28,44 +28,56 @@ def createRoles(pNombre):
         return 501
 
 def readRoles():
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readOneRoles(pIdRol):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .eq("idRol", pIdRol)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .eq("idRol", pIdRol)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def updateRoles(pIdRol, pNombre):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .update({"nombre": pNombre})
-        .eq("idRol", pIdRol)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .update({"nombre": pNombre})
+            .eq("idRol", pIdRol)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def deleteRoles(pIdRol):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .delete()
-        .eq("idRol", pIdRol)
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .delete()
+            .eq("idRol", pIdRol)
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501

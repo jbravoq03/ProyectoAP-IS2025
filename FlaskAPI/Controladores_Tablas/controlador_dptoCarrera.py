@@ -15,56 +15,73 @@ def conectarBD():
     return supabase
 
 def createDptoCarrera(pNombre):
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .insert({"nombre": pNombre
+                     })
+            .execute()
+        )
+        return response
 
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .insert({"nombre": pNombre
-                 })
-        .execute()
-    )
-    return response
-
+    except Exception as error:
+        print(error)
+        return 501
 def readDptoCarrera():
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .execute()
+        )
+        return response
 
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .execute()
-    )
-    return response
-
+    except Exception as error:
+        print(error)
+        return 501
 def readOneDptoCarrera(pIdDc):
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .select("*")
+            .eq("idDC", pIdDc)
+            .execute()
+        )
+        return response
 
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .select("*")
-        .eq("idDC", pIdDc)
-        .execute()
-    )
-    return response
-
+    except Exception as error:
+        print(error)
+        return 501
 def updateDptoCarrera(pIdDc, pNombre):
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .update({"nombre": pNombre
+                     })
+            .eq("idDC", pIdDc)
+            .execute()
+        )
+        return response
 
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .update({"nombre": pNombre
-                 })
-        .eq("idDC", pIdDc)
-        .execute()
-    )
-    return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def deleteDptoCarrera(pIdDc):
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .delete()
+            .eq("idDC", pIdDc)
+            .execute()
+        )
+        return response
 
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .delete()
-        .eq("idDC", pIdDc)
-        .execute()
-    )
-    return response
+    except Exception as error:
+        print(error)
+        return 501
