@@ -15,14 +15,17 @@ def conectarBD():
     return supabase
 
 def createRoles(pNombre):
-
-    supabase = conectarBD()
-    response = (
-        supabase.table(tabla)
-        .insert({"nombre": pNombre})
-        .execute()
-    )
-    return response
+    try:
+        supabase = conectarBD()
+        response = (
+            supabase.table(tabla)
+            .insert({"nombre": pNombre})
+            .execute()
+        )
+        return response
+    except Exception as error:
+        print(error)
+        return 501
 
 def readRoles():
 

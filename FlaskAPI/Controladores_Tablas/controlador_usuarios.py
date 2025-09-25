@@ -78,3 +78,6 @@ def deleteUsuarios(pIdUsr):
         .execute()
     )
     return response
+
+def iniciarSesion(pCorreo, pContrasena):
+    pass
