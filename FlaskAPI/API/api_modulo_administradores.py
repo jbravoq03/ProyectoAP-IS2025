@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, jsonify, request
 from Controladores_Tablas.controlador_roles import *
 from Controladores_Tablas.controlador_dptoCarrera import *
+from Controladores_Tablas.controlador_parametrosGlob import *
 
 # Se define el blueprint
 administradores_bp = Blueprint('administradores',
@@ -229,6 +230,109 @@ def delete_dptocar():
 
     #Se elimina el departamento/carrera en la BD
     respuesta = deleteDptoCarrera(idDc)
+
+    if respuesta != 501:
+        # Se convierte la respuesta en un JSON
+        resp = jsonify({
+            "data": respuesta.data,
+            "count": getattr(respuesta, "count", None)
+        })
+    else:
+        resp = "Error en la BD"
+
+    # Retorno de la respuesta
+    return resp
+
+#-------------------------------------
+# Tabla de Parametros Globales
+
+#Cuerpo del JSON para los POST:
+"""
+{
+    "idParam": "",
+    "nombre": "",
+    "valor": "",
+    "descripcion": ""
+}
+"""
+#Endpoint para crear parametros globales
+@administradores_bp.route('/paramglob/create', methods=['POST'])
+def create_paramglob():
+
+    # Lectura del JSON
+    entrada = request.get_json()
+    nombre = entrada["nombre"]
+    valor = entrada["valor"]
+    descripcion = entrada["descripcion"]
+
+    # Creacion del parametro global en la BD
+    respuesta = createParametrosGlob(nombre, valor, descripcion)
+
+    if respuesta != 501:
+        # Se convierte la respuesta en un JSON
+        resp = jsonify({
+            "data": respuesta.data,
+            "count": getattr(respuesta, "count", None)
+        })
+    else:
+        resp = "Error en la BD"
+
+    # Retorno de la respuesta
+    return resp
+
+#Endpoint que retorna todos los parametros globales
+@administradores_bp.route('/paramglob/read', methods=['GET'])
+def read_paramglob():
+
+    # Lectura de los parametros globales en la BD
+    respuesta = readParametrosGlob()
+
+    if respuesta != 501:
+        # Se convierte la respuesta en un JSON
+        resp = jsonify({
+            "data": respuesta.data
+        })
+    else:
+        resp = "Error en la BD"
+
+    # Retorno de la respuesta
+    return resp
+
+#Endpoint para modificar parametros globales
+@administradores_bp.route('/paramglob/update', methods=['POST'])
+def update_paramglob():
+    #Lectura del JSON
+    entrada = request.get_json()
+    idParam = entrada["idParam"]
+    nombre = entrada["nombre"]
+    valor = entrada["valor"]
+    descripcion = entrada["descripcion"]
+
+    #Se modifica el parametros globales en la BD
+    respuesta = updateParametrosGlob(idParam, nombre, valor, descripcion)
+
+    if respuesta != 501:
+        # Se convierte la respuesta en un JSON
+        resp = jsonify({
+            "data": respuesta.data,
+            "count": getattr(respuesta, "count", None)
+        })
+    else:
+        resp = "Error en la BD"
+
+    # Retorno de la respuesta
+    return resp
+
+#Endpoint para eliminar parametros globales
+@administradores_bp.route('/paramglob/delete', methods=['POST'])
+def delete_paramglob():
+
+    #Lectura del JSON
+    entrada = request.get_json()
+    idParam = entrada["idParam"]
+
+    #Se elimina el parametro global en la BD
+    respuesta = deleteParametrosGlob(idParam)
 
     if respuesta != 501:
         # Se convierte la respuesta en un JSON
