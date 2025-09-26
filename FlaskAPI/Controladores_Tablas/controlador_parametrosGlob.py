@@ -6,7 +6,7 @@ load_dotenv(dotenv_path="var.env")
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-tabla = "ParametrosLab"
+tabla = "ParametrosGlob"
 
 def conectarBD():
     url: str = SUPABASE_URL

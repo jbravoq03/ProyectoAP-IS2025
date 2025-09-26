@@ -14,7 +14,7 @@ def conectarBD():
     supabase: Client = create_client(url, key)
     return supabase
 
-def createUsuarios(pIdLab, pIdRec, pIdUsr, pFechaSoli, pEstado, pMotivo, pAdjunto, pFechaResp):
+def createSolicitudes(pIdLab, pIdRec, pIdUsr, pFechaSoli, pEstado, pMotivo, pAdjunto, pFechaResp):
     try:
         supabase = conectarBD()
         response = (
@@ -34,7 +34,7 @@ def createUsuarios(pIdLab, pIdRec, pIdUsr, pFechaSoli, pEstado, pMotivo, pAdjunt
         print(error)
         return 501
 
-def readUsuarios():
+def readSolicitudes():
     try:
         supabase = conectarBD()
         response = (
@@ -47,7 +47,7 @@ def readUsuarios():
         print(error)
         return 501
 
-def readOneUsuarios(pIdSolic):
+def readOneSolicitudes(pIdSolic):
     try:
         supabase = conectarBD()
         response = (
@@ -61,7 +61,7 @@ def readOneUsuarios(pIdSolic):
         print(error)
         return 501
 
-def updateUsuarios(pIdSolic, pIdLab, pIdRec, pIdUsr, pFechaSoli, pEstado, pMotivo, pAdjunto, pFechaResp):
+def updateSolicitudes(pIdSolic, pIdLab, pIdRec, pIdUsr, pFechaSoli, pEstado, pMotivo, pAdjunto, pFechaResp):
     try:
         supabase = conectarBD()
         response = (
@@ -82,7 +82,7 @@ def updateUsuarios(pIdSolic, pIdLab, pIdRec, pIdUsr, pFechaSoli, pEstado, pMotiv
         print(error)
         return 501
 
-def deleteUsuarios(pIdSolic):
+def deleteSolicitudes(pIdSolic):
     try:
         supabase = conectarBD()
         response = (
