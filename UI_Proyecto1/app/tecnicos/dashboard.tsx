@@ -3,22 +3,10 @@ import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Heading } from '@/components/ui/heading';
-import {
-  ArrowLeftIcon,
-  EditIcon,
-  EyeIcon,
-  Icon,
-  ThreeDotsIcon
-} from '@/components/ui/icon';
-import {
-  Menu,
-  MenuItem,
-  MenuItemLabel
-} from '@/components/ui/menu';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useRouter } from 'expo-router';
-import { Image, StyleSheet } from 'react-native';
+import { Image, ScrollView, StyleSheet } from 'react-native';
 
 
 export default function dashboardTecnicos() {
@@ -34,46 +22,38 @@ export default function dashboardTecnicos() {
   };
 
   return (
+    
     <View style={styles.container}>
+      {/* Inicio Menú principal*/}
       <View style={styles.horizontalContainer}>
-        <Image
-          source={require('../../assets/images/tec.png')} 
-          style={{ width: 150, height: 40}}
-          resizeMode="contain"
-          alt="Logo"
-        />
-        <Menu
-          placement="top"
-          offset={5}
-          disabledKeys={['Settings']}
-          trigger={({ ...triggerProps }) => {
-            return (
-              <Button action="secondary" {...triggerProps}>
-                <ButtonText>Menú</ButtonText>
-              </Button>
-            );
-          }}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} // oculta la barrita
+          contentContainerStyle={styles.horizontalContainer} // aplica estilos al contenido
         >
-          <MenuItem key="GestInvent" textValue="GestInvent">
-            <Icon as={EditIcon} size="sm" className="mr-2" />
-            <MenuItemLabel size="sm">Gestión de Inventario</MenuItemLabel>
-          </MenuItem>
-          <MenuItem key="Mantenimiento" textValue="Mantenimiento">
-            <Icon as={EyeIcon} size="sm" className="mr-2" />
-            <MenuItemLabel size="sm">Pantalla de Mantenimiento</MenuItemLabel>
-          </MenuItem>
-          <MenuItem onPress={handleLogout} key="Reportes" textValue="Reportes">
-            <Icon as={ThreeDotsIcon} size="sm" className="mr-2" />
-            <MenuItemLabel size="sm">Panel de Reportes Operativos</MenuItemLabel>
-          </MenuItem>
-        </Menu>
-        <Button variant="solid" size="md" action="secondary">
-          <Icon as={ArrowLeftIcon} size="sm" className="mr-2" />
-          <ButtonText>Cerrar Sesión</ButtonText>
-        </Button>
+          <Image
+            source={require('../../assets/images/tec.png')} 
+            style={{ width: 150, height: 40}}
+            resizeMode="contain"
+            alt="Logo"
+          />
+          <Button variant="solid" className="bg-white" size="md" action="primary" >
+            <ButtonText className="text-black">Gestión de Inventario</ButtonText>
+          </Button>
+          <Button variant="solid" className="bg-white" size="md" action="primary">
+            <ButtonText className="text-black">Pantalla de Mantenimiento</ButtonText>
+          </Button>
+          <Button variant="solid" className="bg-white" size="md" action="primary">
+            <ButtonText className="text-black">Panel de Reportes Operativos</ButtonText>
+          </Button>
+          <Button onPress={handleLogout} variant="solid" className="bg-white" size="md" action="primary">
+            <ButtonText className="text-black">Cerrar Sesión</ButtonText>
+          </Button>
+        </ScrollView>
       </View>
+      {/* Fin Menú principal*/}
+
       <View style={styles.line} />
-      
       <Card className="p-5 rounded-lg max-w-[360px] m-3 bg-white border border-black" >
         <VStack className="mb-6">
           <Heading size="md" className="mb-4  text-black">
@@ -99,8 +79,7 @@ export default function dashboardTecnicos() {
         </Box>
       </Card>
 
-      
-      
+
     </View>
   );
 }
@@ -157,11 +136,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
   horizontalContainer: {
+  backgroundColor: '#fff',
   flexDirection: 'row',
   alignItems: 'center',       // centra verticalmente los elementos
   justifyContent: 'flex-start', 
-  gap: 40,                     // espacio entre botones e imagen
-  paddingVertical: 5,          // reduce padding vertical
+  gap: 8,                     // espacio entre botones e imagen
+  paddingVertical: 15,          // reduce padding vertical
 },  
 
   });
