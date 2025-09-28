@@ -21,8 +21,12 @@ export default function dashboardTecnicos() {
       router.replace('/');
   };
   const handleGestionInvent = () => {
-    // Redirige al inicio de sesion
+    // Redirige a gestion de inventario
       router.replace('/tecnicos/gestion_inventarios');
+  };
+   const handleMantenimiento = () => {
+    // Redirige a mantenimiento
+      router.replace('/tecnicos/mantenimiento');
   };
 
   return (
@@ -44,7 +48,7 @@ export default function dashboardTecnicos() {
           <Button onPress={handleGestionInvent} variant="solid" className="bg-white" size="md" action="primary" >
             <ButtonText className="text-black">Gestión de Inventario</ButtonText>
           </Button>
-          <Button variant="solid" className="bg-white" size="md" action="primary">
+          <Button onPress={handleMantenimiento} variant="solid" className="bg-white" size="md" action="primary">
             <ButtonText className="text-black">Pantalla de Mantenimiento</ButtonText>
           </Button>
           <Button variant="solid" className="bg-white" size="md" action="primary">
