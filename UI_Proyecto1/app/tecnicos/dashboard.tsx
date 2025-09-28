@@ -63,7 +63,7 @@ export default function dashboardTecnicos() {
           <Card
             key={item.id}
             className="p-5 rounded-lg bg-white border border-black"
-            style={styles.card} // mismo tamaño para todas
+            style={styles.card} 
           >
             <VStack className="mb-6">
               <Heading size="md" className="mb-4 text-black">
