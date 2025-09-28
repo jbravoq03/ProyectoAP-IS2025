@@ -36,7 +36,7 @@ export default function loginScreen() {
     if (email.endsWith("@estudiante.tec.ac.cr")) {
       router.replace("/usuarios/dashboard");
     } else if (email.endsWith("@itcr.ac.cr")) {
-      router.replace("/usuarios/dashboard"); 
+      router.replace("/tecnicos/dashboard"); 
     } else if (email.endsWith("@tec.ac.cr")) {
       router.replace("/administradores/dashboard");
     }
@@ -66,14 +66,14 @@ export default function loginScreen() {
           <Heading className="text-black">Iniciar Sesión</Heading>
           <VStack space="xs">
             <Text className="text-black">Correo</Text>
-            <Input>
-              <InputField value={email} onChangeText={(text) => setEmail(text)} className="text-black" type="text" keyboardType="email-address"/>
+            <Input  variant="rounded">
+              <InputField value={email} onChangeText={(text) => setEmail(text)} className="text-black" type="text" autoCapitalize="none"/>
             </Input>
             {error ? <Text style={{ color: 'red', marginTop: 4 }}>{error}</Text> : null}
           </VStack>
           <VStack space="xs">
             <Text className="text-black">Contraseña</Text>
-            <Input>
+            <Input  variant="rounded">
               <InputField style={{ textAlign: 'left' }} value={pass} onChangeText={(text) => setPass(text)} className="text-black" type={showPassword ? 'text' : 'password'} />
               <InputSlot className="pr-3" onPress={handleState}>
                 <InputIcon as={showPassword ? EyeIcon : EyeOffIcon} />
