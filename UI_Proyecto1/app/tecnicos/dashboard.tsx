@@ -3,12 +3,15 @@ import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Heading } from '@/components/ui/heading';
+import {
+  BellIcon,
+  Icon
+} from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { solicitudes } from '@/model/solicitudes';
 import { useRouter } from 'expo-router';
 import { Image, ScrollView, StyleSheet } from 'react-native';
-
 
 export default function dashboardTecnicos() {
 
@@ -17,9 +20,9 @@ export default function dashboardTecnicos() {
     // Redirige al inicio de sesion
       router.replace('/');
   };
-  const handleInvent = () => {
+  const handleGestionInvent = () => {
     // Redirige al inicio de sesion
-      router.replace('/laboratorios/inventario');
+      router.replace('/tecnicos/gestion_inventarios');
   };
 
   return (
@@ -29,8 +32,8 @@ export default function dashboardTecnicos() {
       <View style={styles.horizontalContainer}>
         <ScrollView 
           horizontal 
-          showsHorizontalScrollIndicator={false} // oculta la barrita
-          contentContainerStyle={styles.horizontalContainer} // aplica estilos al contenido
+          showsHorizontalScrollIndicator={true}
+          contentContainerStyle={styles.horizontalContainer}
         >
           <Image
             source={require('../../assets/images/tec.png')} 
@@ -38,7 +41,7 @@ export default function dashboardTecnicos() {
             resizeMode="contain"
             alt="Logo"
           />
-          <Button variant="solid" className="bg-white" size="md" action="primary" >
+          <Button onPress={handleGestionInvent} variant="solid" className="bg-white" size="md" action="primary" >
             <ButtonText className="text-black">Gestión de Inventario</ButtonText>
           </Button>
           <Button variant="solid" className="bg-white" size="md" action="primary">
@@ -46,6 +49,9 @@ export default function dashboardTecnicos() {
           </Button>
           <Button variant="solid" className="bg-white" size="md" action="primary">
             <ButtonText className="text-black">Panel de Reportes Operativos</ButtonText>
+          </Button>
+          <Button variant="solid" className="bg-white" size="md" action="primary">
+            <Icon as={BellIcon} color='#000000ff' size="sm" className="mr-2" />
           </Button>
           <Button onPress={handleLogout} variant="solid" className="bg-white" size="md" action="primary">
             <ButtonText className="text-black">Cerrar Sesión</ButtonText>
@@ -70,7 +76,10 @@ export default function dashboardTecnicos() {
                 {item.nombre}
               </Heading>
               <Text size="sm" className="text-black">
-                {item.descripcion}
+                Nombre del solicitante: {item.solicitante}{"\n"}
+                Recurso solicitado: {item.recsolicitado}{"\n"}
+                Fecha de Solicitud: {item.fechasoli}{"\n"}
+                Fecha de entrega: {item.fechaentreg}{"\n"}
               </Text>
             </VStack>
             <Box className="flex-col sm:flex-row">
