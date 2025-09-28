@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Heading } from '@/components/ui/heading';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { solicitudes } from '@/model/solicitudes';
 import { useRouter } from 'expo-router';
 import { Image, ScrollView, StyleSheet } from 'react-native';
 
@@ -55,32 +56,40 @@ export default function dashboardTecnicos() {
       <View style={styles.line} />
       {/* Fin Menú principal*/}
 
-      
+      <Text style={styles.title}>Panel de Solicitudes</Text>
 
-      <Card className="p-5 rounded-lg max-w-[360px] m-3 bg-white border border-black" >
-        <VStack className="mb-6">
-          <Heading size="md" className="mb-4  text-black">
-            Solicitud "x"
-          </Heading>
-          <Text size="sm" className="text-black">
-            Descripcion
-          </Text>
-        </VStack>
-        <Box className="flex-col sm:flex-row">
-          <Button className="px-4 py-2 mr-0 mb-3 sm:mr-3 sm:mb-0 sm:flex-1">
-            <ButtonText size="sm">Aceptar</ButtonText>
-          </Button>
-          <Button
-            variant="solid"
-            action="secondary"
-            className="px-4 py-2 border-outline-300 sm:flex-1"
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {solicitudes.map((item) => (
+          <Card
+            key={item.id}
+            className="p-5 rounded-lg bg-white border border-black"
+            style={styles.card} // mismo tamaño para todas
           >
-            <ButtonText size="sm" className="text-typography-600">
-              Rechazar
-            </ButtonText>
-          </Button>
-        </Box>
-      </Card>
+            <VStack className="mb-6">
+              <Heading size="md" className="mb-4 text-black">
+                {item.nombre}
+              </Heading>
+              <Text size="sm" className="text-black">
+                {item.descripcion}
+              </Text>
+            </VStack>
+            <Box className="flex-col sm:flex-row">
+              <Button className="px-4 py-2 mr-0 mb-3 sm:mr-3 sm:mb-0 sm:flex-1">
+                <ButtonText size="sm">Aceptar</ButtonText>
+              </Button>
+              <Button
+                variant="solid"
+                action="secondary"
+                className="px-4 py-2 border-outline-300 sm:flex-1"
+              >
+                <ButtonText size="sm" className="text-typography-600">
+                  Rechazar
+                </ButtonText>
+              </Button>
+            </Box>
+          </Card>
+        ))}
+      </ScrollView>
 
 
     </View>
@@ -130,6 +139,20 @@ const styles = StyleSheet.create({
   gap: 8, 
   paddingVertical: 10,
   paddingBottom: 0,
-},  
+  },
+  scrollContent: {
+    alignItems: 'center',
+    paddingBottom: 80,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#000',
+    textAlign: 'center',
+    marginBottom: 5,
+    marginTop: 20,
+    borderBottomWidth: 2,
+    borderBottomColor: '#000',
+  },
 
-  });
+});
