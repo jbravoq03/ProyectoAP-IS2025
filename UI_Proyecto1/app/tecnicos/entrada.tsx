@@ -5,7 +5,6 @@ import { Heading } from '@/components/ui/heading';
 import { Input, InputField } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { materiales } from '@/model/materiales';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
@@ -28,24 +27,6 @@ export default function registroEntrada() {
         <View style={styles.container}>
             <View style={styles.containerCard}>
                 <FormControl className="p-4 border border-outline-200 rounded-lg w-full" style={styles.card}>
-                <VStack className="gap-4">
-                    <Heading className="text-typography-900 text-black">Registrar Entrada de {materiales.find((item) => item.id === Number(id))?.nombre}</Heading>
-                    <VStack space="xs">
-                    <Text className="text-typography-500 text-black">Cantidad</Text>
-                    <Input>
-                        <InputField type="text" value={cantidad}  className="text-black"  keyboardType="numeric" onChangeText={(text) => {
-                                                                                                                setCantidad(text.replace(/[^0-9]/g, ''));
-                                                                                                                }}/>
-                    </Input>
-                    </VStack>
-                    
-                    <Button className="ml-auto" variant='solid' action="secondary" disabled={cantidad === ''} onPress={handleRegistro}>
-                        <ButtonText>Registrar</ButtonText>
-                    </Button>
-                    <Button className="ml-auto" variant="solid" action="secondary" onPress={handleCancelar}>
-                        <ButtonText>Cancelar</ButtonText>
-                    </Button>
-                </VStack>
                 </FormControl>
             </View>
         </View>

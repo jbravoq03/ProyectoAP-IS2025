@@ -9,7 +9,6 @@ import {
 } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { solicitudes } from '@/model/solicitudes';
 import { useRouter } from 'expo-router';
 import { Image, ScrollView, StyleSheet } from 'react-native';
 
@@ -67,42 +66,6 @@ export default function dashboardTecnicos() {
       {/* Fin Menú principal*/}
 
       <Text style={styles.title}>Panel de Solicitudes</Text>
-
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {solicitudes.map((item) => (
-          <Card
-            key={item.id}
-            className="p-5 rounded-lg bg-white border border-black"
-            style={styles.card} 
-          >
-            <VStack className="mb-6">
-              <Heading size="md" className="mb-4 text-black">
-                {item.nombre}
-              </Heading>
-              <Text size="sm" className="text-black">
-                Nombre del solicitante: {item.solicitante}{"\n"}
-                Recurso solicitado: {item.recsolicitado}{"\n"}
-                Fecha de Solicitud: {item.fechasoli}{"\n"}
-                Fecha de entrega: {item.fechaentreg}{"\n"}
-              </Text>
-            </VStack>
-            <Box className="flex-col sm:flex-row">
-              <Button className="px-4 py-2 mr-0 mb-3 sm:mr-3 sm:mb-0 sm:flex-1">
-                <ButtonText size="sm">Aceptar</ButtonText>
-              </Button>
-              <Button
-                variant="solid"
-                action="secondary"
-                className="px-4 py-2 border-outline-300 sm:flex-1"
-              >
-                <ButtonText size="sm" className="text-typography-600">
-                  Rechazar
-                </ButtonText>
-              </Button>
-            </Box>
-          </Card>
-        ))}
-      </ScrollView>
 
 
     </View>
