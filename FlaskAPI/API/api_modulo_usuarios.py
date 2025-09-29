@@ -184,7 +184,10 @@ def login_Usuarios():
     if respuesta != 501:
         print(respuesta)
         # Se convierte la respuesta en un JSON
-        resp = jsonify({"data": respuesta})
+        if respuesta != False:
+            resp = jsonify({"data": respuesta.data})
+        else:
+            resp = jsonify({"data": respuesta})
 
     else:
         # Indicamos que hubo un error
