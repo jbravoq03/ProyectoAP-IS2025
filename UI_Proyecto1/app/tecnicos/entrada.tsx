@@ -5,16 +5,21 @@ import { Heading } from '@/components/ui/heading';
 import { Input, InputField } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { materiales } from '@/model/materiales';
+import { materiales, recursos } from '@/model/listStorage';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 export default function registroEntrada() {
     const params = useLocalSearchParams<{ id: string }>();
-    const id = params.id
+    const id = params.id;
+
+    const idRecMat = materiales.find((m) => String(m.idMat) === String(id))?.idRec
+ 
+    const nombre = recursos.find((r) => String(r.idRec) === String(idRecMat))?.nombre
     const router = useRouter();
     const [cantidad, setCantidad] = useState('');
+    console.log(nombre);
 
     const handleRegistro = () => {
         console.log(cantidad);
@@ -29,7 +34,7 @@ export default function registroEntrada() {
             <View style={styles.containerCard}>
                 <FormControl className="p-4 border border-outline-200 rounded-lg w-full" style={styles.card}>
                 <VStack className="gap-4">
-                    <Heading className="text-typography-900 text-black">Registrar Entrada de {String(materiales.find((item) => item.idMat === Number(id))?.idMat)}</Heading>
+                    <Heading className="text-typography-900 text-black">Registrar Entrada de {nombre}</Heading>
                     <VStack space="xs">
                     <Text className="text-typography-500 text-black">Cantidad</Text>
                     <Input>

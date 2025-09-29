@@ -6,9 +6,11 @@ import { EyeIcon, EyeOffIcon } from '@/components/ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { setMateriales, setRecursos, setUsuarios } from "@/model/listStorage";
 import { setUEmail, setUser } from '@/model/login';
 import { readRol } from '@/services/moduloAdmin_service';
-import { loginUsuario } from '@/services/moduloUsuarios_service';
+import { readMateriales, readRecursos } from '@/services/moduloLab_service';
+import { loginUsuario, readUsuarios } from '@/services/moduloUsuarios_service';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
@@ -53,6 +55,15 @@ export default function loginScreen() {
     console.log(rol.nombre);
 
     const rolNombre = rol.nombre.toLowerCase();
+
+    const resRecursos = await readRecursos();
+    setRecursos(resRecursos.data);
+
+    const resUsuarios = await readUsuarios();
+    setUsuarios(resUsuarios.data);
+
+    const resMateriales = await readMateriales();
+    setMateriales(resMateriales.data);
 
     if (rolNombre.includes("laboratorio")) {
       router.replace("/laboratorios/dashboard");

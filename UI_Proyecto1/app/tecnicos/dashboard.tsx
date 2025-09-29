@@ -5,11 +5,45 @@ import { Card } from '@/components/ui/card';
 import { Heading } from '@/components/ui/heading';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { solicitudes } from '@/model/solicitudes';
+import { Laboratorio } from '@/model/laboratorios';
+import { recursos, setRecursos, setResponsable, setSolicitudes, solicitudes, usuarios } from "@/model/listStorage";
+import { getUser } from '@/model/login';
+import { Recurso } from '@/model/recursos';
+import { Solicitud } from '@/model/solicitudes';
+import { readLaboratorio, readRecursos, readResponsable, updateRecurso } from '@/services/moduloLab_service';
+import { readSolicitudes, updateSolicitud } from '@/services/moduloTecEnc_service';
 import { useRouter } from 'expo-router';
+import { useEffect, useState } from "react";
 import { Image, ScrollView, StyleSheet } from 'react-native';
 
 export default function dashboardTecnicos() {
+
+  const [laboratorio, setLaboratorio] = useState<Laboratorio | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const idUser = getUser();
+
+  useEffect(() => {
+  const fetchData = async () => {
+    try {
+      // Solicitudes
+      const resSolicitudes = await readSolicitudes();
+      setSolicitudes(resSolicitudes.data);
+
+      // Responsable y laboratorio del usuario actual
+      const resResponsable = await readResponsable(String(idUser));
+      setResponsable(resResponsable.data[0]);
+
+      const resLaboratorio = await readLaboratorio(resResponsable.data[0].idLab);
+      setLaboratorio(resLaboratorio.data[0]);
+
+      
+    } catch (err) {
+      console.error("Error al cargar datos:", err);
+    }
+  };
+  fetchData();
+}, [refreshKey]);
 
   const router = useRouter();
   const handleLogout = () => {
@@ -27,6 +61,60 @@ export default function dashboardTecnicos() {
   const handleRepos = () => {
     // Redirige a Reportes operativos
       router.replace('/tecnicos/repoOperativos');
+  };
+
+   const actualizarLista = async (recursoAct: Recurso, solicitud: Solicitud) => {
+
+    const resp1 = await updateRecurso(recursoAct);
+    const resp2 = await updateSolicitud(solicitud);
+    console.log(resp1, resp2);
+    const resRecursos = await readRecursos();
+    setRecursos(resRecursos.data);
+    const resSolicitudes = await readSolicitudes();
+    setSolicitudes(resSolicitudes.data);
+    
+   }
+
+  const handleAceptar = (id: Number) => {
+
+      const solicitud = solicitudes.find(s => s.idSolic === id);
+
+      if (solicitud) {
+        const recursoAct = recursos.find(r => r.idRec === solicitud.idRec);
+        if (recursoAct?.estado === "Disponible"){
+          solicitud.estado = "Aprobada";
+          solicitud.fechaResp = new Date();
+          recursoAct.estado = "Ocupado";
+          actualizarLista(recursoAct, solicitud);
+          setRefreshKey(prev => prev + 1);
+          
+        }
+
+        
+      } else {
+        console.warn("Solicitud no encontrada");
+      }
+
+  };
+  const handleRechazar = (id: Number) => {
+
+    const solicitud = solicitudes.find(s => s.idSolic === id);
+
+    if (solicitud) {
+      const recursoAct = recursos.find(r => r.idRec === solicitud.idRec);
+      if (recursoAct?.estado === "Ocupado"){
+        solicitud.estado = "Rechazada";
+        solicitud.fechaResp = new Date();
+        actualizarLista(recursoAct, solicitud);
+        setRefreshKey(prev => prev + 1);
+        
+      }
+
+      
+    } else {
+      console.warn("Solicitud no encontrada");
+    }
+
   };
 
   return (
@@ -66,7 +154,9 @@ export default function dashboardTecnicos() {
       <Text style={styles.title}>Panel de Solicitudes</Text>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {solicitudes.map((item) => (
+        
+        {solicitudes && solicitudes.length > 0 ? ( 
+          solicitudes.filter((item) => laboratorio && item.idLab === laboratorio.idLab).map((item) => (
           <Card
             key={String(item.idSolic)}
             className="p-5 rounded-lg bg-white border border-black"
@@ -74,20 +164,23 @@ export default function dashboardTecnicos() {
           >
             <VStack className="mb-6">
               <Heading size="md" className="mb-4 text-black">
-                {`Solicitud ${item.idSolic}`}
+                {`Solicitud de ${recursos.find(r => r.idRec === item.idRec)?.nombre}`}
               </Heading>
               <Text size="sm" className="text-black">
-                Nombre del solicitante: {String(item.idUsr)}{"\n"}
-                Recurso solicitado: {String(item.idRec)}{"\n"}
+                Nombre del solicitante: {usuarios.find(u => u.idUsr === item.idUsr)?.nombre || "..."}{"\n"}
+                Recurso solicitado: {recursos.find(r => r.idRec === item.idRec)?.nombre || "..."}{"\n"}
                 Fecha de Solicitud: {String(item.fechaSoli)}{"\n"}
-                Fecha de entrega: {String(item.fechaResp)}{"\n"}
+                Fecha de Respuesta: {String(item.fechaResp || "Pendiente")}{"\n"}
+                Estado: {String(item.estado)}
               </Text>
             </VStack>
             <Box className="flex-col sm:flex-row">
-              <Button className="px-4 py-2 mr-0 mb-3 sm:mr-3 sm:mb-0 sm:flex-1">
+              <Button disabled={item.estado !== "Pendiente"} onPress={() => handleAceptar(item.idSolic)} className="px-4 py-2 mr-0 mb-3 sm:mr-3 sm:mb-0 sm:flex-1">
                 <ButtonText size="sm">Aceptar</ButtonText>
               </Button>
               <Button
+                disabled={item.estado !== "Pendiente"}
+                onPress={() => handleRechazar(item.idSolic)}
                 variant="solid"
                 action="secondary"
                 className="px-4 py-2 border-outline-300 sm:flex-1"
@@ -98,7 +191,12 @@ export default function dashboardTecnicos() {
               </Button>
             </Box>
           </Card>
-        ))}
+        ))
+      ) : (
+        <Text className="text-center text-black mt-5">
+          No hay Solicitudes...
+        </Text>
+      )}
       </ScrollView>
 
 

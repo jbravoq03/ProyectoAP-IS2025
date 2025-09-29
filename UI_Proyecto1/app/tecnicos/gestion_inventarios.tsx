@@ -13,26 +13,26 @@ import {
   TableRow
 } from '@/components/ui/table';
 import { Text } from '@/components/ui/text';
-import { materiales } from '@/model/materiales';
+import { getResponsables, materiales, recursos } from '@/model/listStorage';
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet } from 'react-native';
 
 export default function gestionInventarios() {
   const router = useRouter();
+  const labId = getResponsables()?.idLab;
+
 
    const handleMenu = () => {
     // Redirige al inicio de sesion
       router.replace('/tecnicos/dashboard');
     };
 
-    const handleRegistro = (id: number) => {
+    const handleRegistro = (id: String) => {
       console.log(id);
-      // Redirige al inicio de sesion
       router.replace(`/tecnicos/entrada?id=${id}`);
     };
 
-    const handleSalida = (id: number) => {
-    // Redirige al inicio de sesion
+    const handleSalida = (id: String) => {
       router.replace(`/tecnicos/salida?id=${id}`);
     };
 
@@ -50,47 +50,52 @@ export default function gestionInventarios() {
             <Icon  as={ArrowLeftIcon} color='#000000ff' size="sm" className="mr-2" />
             <ButtonText>Volver al Dashboard</ButtonText>
         </Button>
-        <Text style={styles.title}>Panel de Solicitudes</Text>
-            
-        <ScrollView horizontal showsHorizontalScrollIndicator={true} contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.title}>Gestion de Inventario</Text>
+        <ScrollView  showsVerticalScrollIndicator={true} contentContainerStyle={styles.scrollContent}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={true} contentContainerStyle={styles.scrollContent}>
 
-                <Table style={styles.tableContent}>
-                    <TableHeader style={styles.tableContent}>
-                        <TableRow>
-                            <TableHead style={styles.tableContent}>Elemento</TableHead>
-                            <TableHead style={styles.tableContent}>Cantidad</TableHead>
-                            <TableHead style={styles.tableContent}>Medida</TableHead>
-                            <TableHead style={styles.tableContent}>Alerta</TableHead>
-                            <TableHead style={styles.tableContent}>Acciones</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {materiales.map((item) => ( 
-                            <TableRow key={String(item.idMat)}>
-                                <TableData style={styles.tableContent}>{String(item.idMat)}</TableData>
-                                <TableData style={styles.tableContent}>{String(item.cantidad)}</TableData>
-                                <TableData style={styles.tableContent}>{String(item.medida)}</TableData>
-                                <TableData style={styles.tableContent}> {String(item.reorden) ? 'Se debe reponer' : 'No es necesario reponer'}</TableData>
-                                <TableData style={styles.tableContent}>
-                                  <View style={styles.horizontalContainer}>
-                                    <Button variant="solid" style={{backgroundColor: "#ffffffff", 
-                                        borderColor: "#000000", 
-                                        borderWidth: 2,}}
-                                        size="sm" action="secondary" onPress={() => handleRegistro(Number(item.idMat))}>
-                                        <ButtonText style={{ color: "#000" }}>Entrada</ButtonText>
-                                    </Button>
-                                    <Button variant="solid" style={{backgroundColor: "#ffffffff", 
-                                        borderColor: "#000000", 
-                                        borderWidth: 2,}}
-                                        size="sm" action="secondary" onPress={() => handleSalida(Number(item.idMat))}>
-                                        <ButtonText style={{ color: "#000" }}>Salida</ButtonText>
-                                    </Button>
-                                  </View>
-                                </TableData>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                  <Table style={styles.tableContent}>
+                      <TableHeader style={styles.tableContent}>
+                          <TableRow>
+                              <TableHead style={styles.tableContent}>Elemento</TableHead>
+                              <TableHead style={styles.tableContent}>Cantidad</TableHead>
+                              <TableHead style={styles.tableContent}>Medida</TableHead>
+                              <TableHead style={styles.tableContent}>Alerta</TableHead>
+                              <TableHead style={styles.tableContent}>Acciones</TableHead>
+                          </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                          {materiales.filter((m) =>
+                                recursos.some(
+                                  (r) => r.idRec === Number(m.idRec) && r.idLab === Number(labId)
+                                )
+                              ).map((item) => ( 
+                              <TableRow key={String(item.idMat)}>
+                                  <TableData style={styles.tableContent}>{recursos.find(r => r.idRec === item.idRec)?.nombre ?? "Recurso desconocido"}</TableData>
+                                  <TableData style={styles.tableContent}>{String(item.cantidad)}</TableData>
+                                  <TableData style={styles.tableContent}>{String(item.medida)}</TableData>
+                                  <TableData style={styles.tableContent}> {String(item.reorden) ? 'Se debe reponer' : 'No es necesario reponer'}</TableData>
+                                  <TableData style={styles.tableContent}>
+                                    <View style={styles.horizontalContainer}>
+                                      <Button variant="solid" style={{backgroundColor: "#ffffffff", 
+                                          borderColor: "#000000", 
+                                          borderWidth: 2,}}
+                                          size="sm" action="secondary" onPress={() => handleRegistro(String(item.idMat))}>
+                                          <ButtonText style={{ color: "#000" }}>Entrada</ButtonText>
+                                      </Button>
+                                      <Button variant="solid" style={{backgroundColor: "#ffffffff", 
+                                          borderColor: "#000000", 
+                                          borderWidth: 2,}}
+                                          size="sm" action="secondary" onPress={() => handleSalida(String(item.idMat))}>
+                                          <ButtonText style={{ color: "#000" }}>Salida</ButtonText>
+                                      </Button>
+                                    </View>
+                                  </TableData>
+                              </TableRow>
+                          ))}
+                      </TableBody>
+                  </Table>
+          </ScrollView>
         </ScrollView>
         
     </View>
