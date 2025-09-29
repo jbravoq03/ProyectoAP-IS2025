@@ -7,6 +7,7 @@ import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { setUEmail, setUser } from '@/model/login';
+import { readRol } from '@/services/moduloAdmin_service';
 import { loginUsuario } from '@/services/moduloUsuarios_service';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -47,18 +48,21 @@ export default function loginScreen() {
     setUser(usuario.idUsr);
     setUEmail(usuario.correoInsti);
 
+    const respRol = await readRol(String(usuario.idRol));
+    const rol = respRol?.data[0];
+    console.log(rol.nombre);
 
-    // Redirige al modulo segun email (Consultar antes a BD para saber el rol correspondiente)
-    if (email.endsWith("@estudiante.tec.ac.cr")) {
-      router.replace("/usuarios/dashboard");
-    } else if (email.endsWith("@itcr.ac.cr")) {
-      router.replace("/tecnicos/dashboard"); 
-    } else if (email.endsWith("@tec.ac.cr")) {
+    const rolNombre = rol.nombre.toLowerCase();
+
+    if (rolNombre.includes("laboratorio")) {
+      router.replace("/laboratorios/dashboard");
+    } else if (rolNombre.includes("tecnico") || rolNombre.includes("encargado")) {
+      router.replace("/tecnicos/dashboard");
+    } else if (rolNombre.includes("administrador")) {
       router.replace("/administradores/dashboard");
+    } else {
+      router.replace("/usuarios/dashboard");
     }
-
-    setEmail('')
-    setPass('')
 
   };
 
