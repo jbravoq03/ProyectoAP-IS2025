@@ -1,11 +1,12 @@
 import { View } from '@/components/Themed';
-import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Heading } from '@/components/ui/heading';
+import {
+  ArrowLeftIcon,
+  Icon
+} from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { VStack } from '@/components/ui/vstack';
-import { solicitudes } from '@/model/solicitudes';
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet } from 'react-native';
 
@@ -13,61 +14,85 @@ export default function repoOperativos() {
 
   const router = useRouter();
  
-  const handleGestionInvent = () => {
-    // Redirige a gestion al dashboard
+  const handleMenu = () => {
+    // Redirige al dashboard
       router.replace('/tecnicos/dashboard');
   };
-   const handleMantenimiento = () => {
-    // Redirige a mantenimiento
-      router.replace('/tecnicos/mantenimiento');
+  const handleTopRec = () => {
+    // Redirige a gestion al dashboard
+      router.replace('/tecnicos/recMasUsados');
   };
+  const handleConsumoMat = () => {
+    // Redirige a gestion al dashboard
+      router.replace('/tecnicos/consumoMats');
+  };
+  const handleGraficos = () => {
+    // Redirige a gestion al dashboard
+      router.replace('/tecnicos/graficosUso');
+  };
+  
 
   return (
     
     <View style={styles.container}>
+      <Text style={styles.header}>
+          Sistema de Gestión de Laboratorios Académicos del Tecnológico de Costa Rica
+      </Text>
+      <View style={styles.line} />
+      <Button variant="solid" onPress={handleMenu} style={{backgroundColor: "#ffffffff", 
+                                      borderColor: "#000000", 
+                                      borderWidth: 2,}} size="sm" action="primary">
 
-      <Text style={styles.title}>Panel de Solicitudes</Text>
+          <Icon  as={ArrowLeftIcon} color='#000000ff' size="sm" className="mr-2" />
+          <ButtonText>Volver al Dashboard</ButtonText>
+      </Button>
+      <Text style={styles.title}>Pantalla de Mantenimiento</Text>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {solicitudes.map((item) => (
-          <Card
-            key={item.id}
-            className="p-5 rounded-lg bg-white border border-black"
-            style={styles.card} 
-          >
-            <VStack className="mb-6">
-              <Heading size="md" className="mb-4 text-black">
-                {item.nombre}
-              </Heading>
-              <Text size="sm" className="text-black">
-                Nombre del solicitante: {item.solicitante}{"\n"}
-                Recurso solicitado: {item.recsolicitado}{"\n"}
-                Fecha de Solicitud: {item.fechasoli}{"\n"}
-                Fecha de entrega: {item.fechaentreg}{"\n"}
-              </Text>
-            </VStack>
-            <Box className="flex-col sm:flex-row">
-              <Button className="px-4 py-2 mr-0 mb-3 sm:mr-3 sm:mb-0 sm:flex-1">
-                <ButtonText size="sm">Aceptar</ButtonText>
-              </Button>
-              <Button
-                variant="solid"
-                action="secondary"
-                className="px-4 py-2 border-outline-300 sm:flex-1"
-              >
-                <ButtonText size="sm" className="text-typography-600">
-                  Rechazar
-                </ButtonText>
-              </Button>
-            </Box>
-          </Card>
-        ))}
+
+        <Card className="p-5 rounded-lg bg-white border border-black"
+            style={styles.card} >
+          <Text className="text-sm font-normal mb-2 text-typography-700 text-black">
+            Recursos más usados
+          </Text>
+          <Heading size="md" className="mb-4 text-black">
+            Consulta los recursos más usados
+          </Heading>
+          <Button onPress={handleTopRec} variant="solid" className="px-4 py-2 mr-0 mb-3 sm:mr-3 sm:mb-0 sm:flex-1" size="md" action="primary">
+            <ButtonText className="text-black">Consultar</ButtonText>
+          </Button>
+        </Card>
+        <Card className="p-5 rounded-lg bg-white border border-black"
+            style={styles.card} >
+          <Text className="text-sm font-normal mb-2 text-typography-700 text-black">
+            Datos de consumo
+          </Text>
+          <Heading size="md" className="mb-4 text-black">
+            Consulta los datos de consumo de los recursos
+          </Heading>
+          <Button onPress={handleConsumoMat} variant="solid" className="px-4 py-2 mr-0 mb-3 sm:mr-3 sm:mb-0 sm:flex-1" size="md" action="primary">
+            <ButtonText className="text-black">Consultar</ButtonText>
+          </Button>
+        </Card>
+        <Card className="p-5 rounded-lg bg-white border border-black"
+            style={styles.card} >
+          <Text className="text-sm font-normal mb-2 text-typography-700 text-black">
+            Graficos
+          </Text>
+          <Heading size="md" className="mb-4 text-black">
+            Consulta los gráficos para una mejor visualización
+          </Heading>
+          <Button onPress={handleGraficos} variant="solid" className="px-4 py-2 mr-0 mb-3 sm:mr-3 sm:mb-0 sm:flex-1" size="md" action="primary">
+            <ButtonText className="text-black">Consultar</ButtonText>
+          </Button>
+        </Card>
+          
       </ScrollView>
 
 
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -99,10 +124,11 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   line: {
-    marginTop: 4,
+    marginTop: 10,
     height: 2,
     width: '100%',
     backgroundColor: '#000',
+    marginBottom: 15,
   },
   horizontalContainer: {
   backgroundColor: '#fff',
@@ -117,8 +143,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 80,
   },
+  header: {
+    padding: 16,
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#000',
+  },
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#000',
     textAlign: 'center',

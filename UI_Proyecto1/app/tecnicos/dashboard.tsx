@@ -3,10 +3,6 @@ import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Heading } from '@/components/ui/heading';
-import {
-  BellIcon,
-  Icon
-} from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { solicitudes } from '@/model/solicitudes';
@@ -57,9 +53,6 @@ export default function dashboardTecnicos() {
           </Button>
           <Button onPress={handleRepos} variant="solid" className="bg-white" size="md" action="primary">
             <ButtonText className="text-black">Panel de Reportes Operativos</ButtonText>
-          </Button>
-          <Button variant="solid" className="bg-white" size="md" action="primary">
-            <Icon as={BellIcon} color='#000000ff' size="sm" className="mr-2" />
           </Button>
           <Button onPress={handleLogout} variant="solid" className="bg-white" size="md" action="primary">
             <ButtonText className="text-black">Cerrar Sesión</ButtonText>
