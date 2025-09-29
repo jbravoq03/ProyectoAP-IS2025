@@ -6,15 +6,18 @@ import { EyeIcon, EyeOffIcon } from '@/components/ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { setUEmail, setUser } from '@/model/login';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
+
 export default function loginScreen() {
   const router = useRouter();
 
   const [email, setEmail] = useState('');
   const [pass, setPass] = useState('');
   const [error, setError] = useState('');
+
   
   const handleLogin = () => {
 
@@ -30,6 +33,8 @@ export default function loginScreen() {
     // Continuar con login
     console.log('Email válido:', email);
     console.log('Contraseña:', pass);
+    setUser("123");
+    setUEmail(email);
 
 
     // Redirige al modulo segun email (Consultar antes a BD para saber el rol correspondiente)

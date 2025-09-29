@@ -27,6 +27,10 @@ export default function dashboardTecnicos() {
     // Redirige a mantenimiento
       router.replace('/tecnicos/mantenimiento');
   };
+  const handleRepos = () => {
+    // Redirige a Reportes operativos
+      router.replace('/tecnicos/repoOperativos');
+  };
 
   return (
     
@@ -50,7 +54,7 @@ export default function dashboardTecnicos() {
           <Button onPress={handleMantenimiento} variant="solid" className="bg-white" size="md" action="primary">
             <ButtonText className="text-black">Pantalla de Mantenimiento</ButtonText>
           </Button>
-          <Button variant="solid" className="bg-white" size="md" action="primary">
+          <Button onPress={handleRepos} variant="solid" className="bg-white" size="md" action="primary">
             <ButtonText className="text-black">Panel de Reportes Operativos</ButtonText>
           </Button>
           <Button variant="solid" className="bg-white" size="md" action="primary">

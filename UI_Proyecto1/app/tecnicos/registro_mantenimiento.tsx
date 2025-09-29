@@ -5,19 +5,31 @@ import { Heading } from '@/components/ui/heading';
 import { Input, InputField } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { materiales } from '@/model/materiales';
+import { getUser } from '@/model/login';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+
 
 export default function registroMantenimeinto() {
-    const params = useLocalSearchParams<{ id: string }>();
-    const id = params.id
+
     const router = useRouter();
-    const [cantidad, setCantidad] = useState('');
+    const userId = getUser();
+    const params = useLocalSearchParams<{ mail: string }>();
+    const userMail = params.mail;
+    const [mantenimiento, setMantenimiento] = useState("");
+    const [observaciones, setObservaciones] = useState("");
+
+    const [dia, setDia] = useState("");
+    const [mes, setMes] = useState("");
+    const [anio, setAnio] = useState("");
 
     const handleRegistro = () => {
-        console.log(cantidad);
+        const fecha = new Date(Number(anio), Number(mes), Number(dia) )
+        console.log("Usuario conectado:", userId);
+        console.log(fecha);
+        console.log(mantenimiento);
+        console.log(observaciones);
         router.replace('/tecnicos/mantenimiento');
     };
     const handleCancelar = () => {
@@ -26,29 +38,86 @@ export default function registroMantenimeinto() {
 
     return (
         <View style={styles.container}>
-            <View style={styles.containerCard}>
-                <FormControl className="p-4 border border-outline-200 rounded-lg w-full" style={styles.card}>
-                <VStack className="gap-4">
-                    <Heading className="text-typography-900 text-black">Registrar Entrada de {materiales.find((item) => item.id === Number(id))?.nombre}</Heading>
-                    <VStack space="xs">
-                    <Text className="text-typography-500 text-black">Cantidad</Text>
-                    <Input>
-                        <InputField type="text" value={cantidad}  className="text-black"  keyboardType="numeric" onChangeText={(text) => {
-                                                                                                                setCantidad(text.replace(/[^0-9]/g, ''));
-                                                                                                                }}/>
-                    </Input>
+            <ScrollView showsVerticalScrollIndicator={true} contentContainerStyle={styles.scrollContentV}>
+                <View style={styles.containerCard}>
+                    <FormControl className="p-4 border border-outline-200 rounded-lg w-full" style={styles.card}>
+                    <VStack className="gap-4">
+                        <Heading className="text-typography-900 text-black">Registrar Mantenimiento</Heading>
+                        <VStack space="xs">
+                        <Text className="text-typography-500 text-black">Fecha:</Text>
+                        </VStack>
+                        <View style={{ flexDirection: "row", gap: 10 }}>
+                            <Input style={{ width: 60 }}>
+                                <InputField
+                                className="text-black"
+                                keyboardType="numeric"
+                                maxLength={2}
+                                placeholder="DD"
+                                value={dia}
+                                onChangeText={(text) => setDia(text.replace(/[^0-9]/g, ""))}
+                                />
+                            </Input>
+
+                            <Input style={{ width: 60 }}>
+                                <InputField
+                                className="text-black"
+                                keyboardType="numeric"
+                                maxLength={2}
+                                placeholder="MM"
+                                value={mes}
+                                onChangeText={(text) => setMes(text.replace(/[^0-9]/g, ""))}
+                                />
+                            </Input>
+
+                            <Input style={{ width: 80 }}>
+                                <InputField
+                                className="text-black"
+                                keyboardType="numeric"
+                                maxLength={4}
+                                placeholder="YYYY"
+                                value={anio}
+                                onChangeText={(text) => setAnio(text.replace(/[^0-9]/g, ""))}
+                                />
+                            </Input>
+                        </View>
+                        <Text className="text-typography-500 text-black">Responsable:</Text>
+                        <Input>
+                            <InputField
+                            className="text-black"
+                            value={userMail || " No hay"}
+                            editable={false}
+                            />
+                        </Input>
+                        <Text className="text-typography-500 text-black">Mantenimiento:</Text>
+                        <Input>
+                            <InputField
+                            className="text-black"
+                            placeholder="Tipo de mantenimiento"
+                            value={mantenimiento}
+                            onChangeText={setMantenimiento}
+                            />
+                        </Input>
+                        <Text className="text-typography-500 text-black">Observaciones:</Text>
+                        <Input>
+                            <InputField
+                            className="text-black"
+                            placeholder="Escriba observaciones"
+                            value={observaciones}
+                            onChangeText={setObservaciones}
+                            />
+                        </Input>
+                        <Button className="ml-auto" variant='solid' action="secondary" onPress={handleRegistro}>
+                            <ButtonText>Registrar</ButtonText>
+                        </Button>
+                        <Button className="ml-auto" variant="solid" action="secondary" onPress={handleCancelar}>
+                            <ButtonText>Cancelar</ButtonText>
+                        </Button>
                     </VStack>
-                    
-                    <Button className="ml-auto" variant='solid' action="secondary" disabled={cantidad === ''} onPress={handleRegistro}>
-                        <ButtonText>Registrar</ButtonText>
-                    </Button>
-                    <Button className="ml-auto" variant="solid" action="secondary" onPress={handleCancelar}>
-                        <ButtonText>Cancelar</ButtonText>
-                    </Button>
-                </VStack>
-                </FormControl>
-            </View>
+                    </FormControl>
+                </View>
+            </ScrollView>
         </View>
+        
     );
 }
 
@@ -80,4 +149,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffffff',
         padding: 50,
     },
+    scrollContentV: {
+    alignItems: 'center',
+    paddingBottom: 80,
+  },
 });
