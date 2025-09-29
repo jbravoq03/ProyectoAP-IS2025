@@ -1,5 +1,5 @@
 import { BitAccion } from "@/model/bitacAcciones";
-import { BitRecurso } from "@/model/bitacRecursos";
+import { bitacoraRec } from "@/model/bitacoraRecursos";
 import { Solicitud } from "@/model/solicitudes";
 
 const API_URL = "http://localhost:5000/tecnicencar";
@@ -68,7 +68,7 @@ export const readBitAcciones = async (): Promise<any> => {
 };
 
 // -------------------- BITACORA RECURSOS --------------------
-export const createBitRecurso = async (bit: BitRecurso) => {
+export const createBitRecurso = async (bit: bitacoraRec) => {
   const res = await fetch(`${API_URL}/bitacrecursos/create`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
