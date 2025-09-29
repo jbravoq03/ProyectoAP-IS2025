@@ -7,6 +7,7 @@ import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { setUEmail, setUser } from '@/model/login';
+import { loginUsuario } from '@/services/moduloUsuarios_service';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
@@ -19,22 +20,32 @@ export default function loginScreen() {
   const [error, setError] = useState('');
 
   
-  const handleLogin = () => {
+  const handleLogin = async () => {
 
      // Regex para validar que tenga @ y .
     const emailRegex = /^[^\s@]+@(estudiante\.tec\.ac\.cr|itcr\.ac\.cr|tec\.ac\.cr)$/;
-
+    
     if (!emailRegex.test(email)) {
       setError('Formatos validos: @estudiante.tec.ac.cr, @itcr.ac.cr, @tec.ac.cr');
       return;
     }
 
+    const respLogin = await loginUsuario(email, pass);
+    console.log(respLogin?.data);
+    
+    if (!respLogin?.data) {
+      setError('Correo o contraseña invalidos');
+      return;
+    }
+    const usuario = respLogin?.data[0];
+    
     setError('');
+    
     // Continuar con login
-    console.log('Email válido:', email);
-    console.log('Contraseña:', pass);
-    setUser("123");
-    setUEmail(email);
+    console.log('Email válido:', usuario.correoInsti);
+    console.log('Contraseña:', usuario.contrasena);
+    setUser(usuario.idUsr);
+    setUEmail(usuario.correoInsti);
 
 
     // Redirige al modulo segun email (Consultar antes a BD para saber el rol correspondiente)
