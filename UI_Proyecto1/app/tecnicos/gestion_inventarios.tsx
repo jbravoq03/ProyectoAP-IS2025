@@ -13,6 +13,7 @@ import {
   TableRow
 } from '@/components/ui/table';
 import { Text } from '@/components/ui/text';
+import { materiales } from '@/model/materiales';
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet } from 'react-native';
 
@@ -63,6 +64,32 @@ export default function gestionInventarios() {
                             <TableHead style={styles.tableContent}>Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
+                    <TableBody>
+                        {materiales.map((item) => ( 
+                            <TableRow key={item.id}>
+                                <TableData style={styles.tableContent}>{item.nombre}</TableData>
+                                <TableData style={styles.tableContent}>{item.cantidad}</TableData>
+                                <TableData style={styles.tableContent}>{item.estado}</TableData>
+                                <TableData style={styles.tableContent}> {item.alerta ? 'Se debe reponer' : 'No es necesario reponer'}</TableData>
+                                <TableData style={styles.tableContent}>
+                                  <View style={styles.horizontalContainer}>
+                                    <Button variant="solid" style={{backgroundColor: "#ffffffff", 
+                                        borderColor: "#000000", 
+                                        borderWidth: 2,}}
+                                        size="sm" action="secondary" onPress={() => handleRegistro(item.id)}>
+                                        <ButtonText style={{ color: "#000" }}>Entrada</ButtonText>
+                                    </Button>
+                                    <Button variant="solid" style={{backgroundColor: "#ffffffff", 
+                                        borderColor: "#000000", 
+                                        borderWidth: 2,}}
+                                        size="sm" action="secondary" onPress={() => handleSalida(item.id)}>
+                                        <ButtonText style={{ color: "#000" }}>Salida</ButtonText>
+                                    </Button>
+                                  </View>
+                                </TableData>
+                            </TableRow>
+                        ))}
+                    </TableBody>
                 </Table>
         </ScrollView>
         
