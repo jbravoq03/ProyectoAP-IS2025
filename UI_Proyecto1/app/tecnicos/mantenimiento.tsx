@@ -1,19 +1,20 @@
 import { View } from '@/components/Themed';
 import { Button, ButtonText } from '@/components/ui/button';
 import {
-    ArrowLeftIcon,
-    Icon
+  ArrowLeftIcon,
+  Icon
 } from '@/components/ui/icon';
 import {
-    Table,
-    TableBody,
-    TableData,
-    TableHead,
-    TableHeader,
-    TableRow
+  Table,
+  TableBody,
+  TableData,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table';
 import { Text } from '@/components/ui/text';
-import { materiales } from '@/model/materiales';
+import { bitacRecursos } from '@/model/bitacoraRecursos';
+import { getEmail } from '@/model/login';
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet } from 'react-native';
 
@@ -21,11 +22,12 @@ export default function mantenimientos() {
   const router = useRouter();
 
    const handleMenu = () => {
-      router.replace('/tecnicos/dashboard');
+      router.replace(`/tecnicos/dashboard`);
     };
 
     const handleRegistro = () => {
-      router.replace(`/tecnicos/registro_mantenimiento`);
+      const mail = getEmail();
+      router.replace(`/tecnicos/registro_mantenimiento?mail=${mail}`);
     };
 
 
@@ -56,7 +58,7 @@ export default function mantenimientos() {
                     <Table style={styles.tableContent}>
                         <TableHeader style={styles.tableContent}>
                             <TableRow style={styles.tableContentRow}>
-                                <TableHead style={styles.tableContent}>Registro</TableHead>
+                                <TableHead style={styles.tableContent}>Recurso</TableHead>
                                 <TableHead style={styles.tableContent}>Responsable</TableHead>
                                 <TableHead style={styles.tableContent}>Tipo</TableHead>
                                 <TableHead style={styles.tableContent}>Fecha</TableHead>
@@ -64,14 +66,13 @@ export default function mantenimientos() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {materiales.map((item) => ( 
-                                <TableRow style={styles.tableContentRow} key={item.id}>
+                            {bitacRecursos.map((item) => ( 
+                                <TableRow style={styles.tableContentRow} key={item.idRec}>
                                     <TableData style={styles.tableContent}>{item.nombre}</TableData>
-                                    <TableData style={styles.tableContent}>{item.cantidad}</TableData>
-                                    <TableData style={styles.tableContent}>{item.estado}</TableData>
-                                    <TableData style={styles.tableContent}> {item.alerta ? 'Se debe reponer' : 'No es necesario reponer'}</TableData>
-                                    <TableData style={styles.tableContent}>
-                                    </TableData>
+                                    <TableData style={styles.tableContent}>{item.nombreUsuario}</TableData>
+                                    <TableData style={styles.tableContent}>{item.accion}</TableData>
+                                    <TableData style={styles.tableContent}>{item.fecha.toString()}</TableData>
+                                    <TableData style={styles.tableContent}>{item.descripcion}</TableData>
                                 </TableRow>
                             ))}
                         </TableBody>

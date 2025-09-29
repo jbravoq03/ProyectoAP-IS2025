@@ -3,72 +3,28 @@ import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Heading } from '@/components/ui/heading';
-import {
-  BellIcon,
-  Icon
-} from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { solicitudes } from '@/model/solicitudes';
 import { useRouter } from 'expo-router';
-import { Image, ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 
-export default function dashboardTecnicos() {
+export default function repoOperativos() {
 
   const router = useRouter();
-  const handleLogout = () => {
-    // Redirige al inicio de sesion
-      router.replace('/');
-  };
+ 
   const handleGestionInvent = () => {
-    // Redirige a gestion de inventario
-      router.replace('/tecnicos/gestion_inventarios');
+    // Redirige a gestion al dashboard
+      router.replace('/tecnicos/dashboard');
   };
    const handleMantenimiento = () => {
     // Redirige a mantenimiento
       router.replace('/tecnicos/mantenimiento');
   };
-  const handleRepos = () => {
-    // Redirige a Reportes operativos
-      router.replace('/tecnicos/repoOperativos');
-  };
 
   return (
     
     <View style={styles.container}>
-      {/* Inicio Menú principal*/}
-      <View style={styles.horizontalContainer}>
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={true}
-          contentContainerStyle={styles.horizontalContainer}
-        >
-          <Image
-            source={require('../../assets/images/tec.png')} 
-            style={{ width: 150, height: 40}}
-            resizeMode="contain"
-            alt="Logo"
-          />
-          <Button onPress={handleGestionInvent} variant="solid" className="bg-white" size="md" action="primary" >
-            <ButtonText className="text-black">Gestión de Inventario</ButtonText>
-          </Button>
-          <Button onPress={handleMantenimiento} variant="solid" className="bg-white" size="md" action="primary">
-            <ButtonText className="text-black">Pantalla de Mantenimiento</ButtonText>
-          </Button>
-          <Button onPress={handleRepos} variant="solid" className="bg-white" size="md" action="primary">
-            <ButtonText className="text-black">Panel de Reportes Operativos</ButtonText>
-          </Button>
-          <Button variant="solid" className="bg-white" size="md" action="primary">
-            <Icon as={BellIcon} color='#000000ff' size="sm" className="mr-2" />
-          </Button>
-          <Button onPress={handleLogout} variant="solid" className="bg-white" size="md" action="primary">
-            <ButtonText className="text-black">Cerrar Sesión</ButtonText>
-          </Button>
-        </ScrollView>
-      </View>
-      
-      <View style={styles.line} />
-      {/* Fin Menú principal*/}
 
       <Text style={styles.title}>Panel de Solicitudes</Text>
 
