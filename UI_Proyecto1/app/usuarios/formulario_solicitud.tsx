@@ -1,20 +1,19 @@
+import NotificationTray from '@/components/NotificationTray';
 import { View } from '@/components/Themed';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Text } from '@/components/ui/text';
 import { Card } from '@/components/ui/card';
-import { Input, InputField } from '@/components/ui/input';
 import { FormControl } from '@/components/ui/form-control';
-import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import {
   BellIcon,
   Icon
 } from '@/components/ui/icon';
-import { useRouter } from 'expo-router';
-import { Image, ScrollView, StyleSheet, Alert } from 'react-native';
-import { useState } from 'react';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
 import { Picker } from '@react-native-picker/picker';
-import NotificationTray from '@/components/NotificationTray';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Alert, Image, ScrollView, StyleSheet } from 'react-native';
 
 export default function FormularioSolicitud() {
   const router = useRouter();
@@ -130,141 +129,143 @@ export default function FormularioSolicitud() {
       <View style={styles.line} />
 
       {/* Main Content */}
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>Formulario de solicitud</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+        <ScrollView showsHorizontalScrollIndicator={true} contentContainerStyle={styles.scrollContent}>
+          <Text style={styles.title}>Formulario de solicitud</Text>
 
-        <Card size="md" variant="elevated" style={styles.formCard}>
-          <VStack space="lg" style={styles.formContainer}>
-            
-            {/* Recurso Dropdown */}
-            <FormControl>
-              <Text style={styles.label}>Recurso</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={selectedRecurso}
-                  style={styles.picker}
-                  onValueChange={(itemValue) => setSelectedRecurso(itemValue)}
-                >
-                  <Picker.Item label="Recurso" value="" />
-                  <Picker.Item label="Proyector" value="proyector" />
-                  <Picker.Item label="Computadora" value="computadora" />
-                  <Picker.Item label="Pizarra Digital" value="pizarra_digital" />
-                  <Picker.Item label="Sistema de Audio" value="audio" />
-                  <Picker.Item label="Cámara" value="camara" />
-                </Picker>
-              </View>
-            </FormControl>
-
-            {/* Laboratorio Dropdown */}
-            <FormControl>
-              <Text style={styles.label}>Laboratorio</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={selectedLaboratorio}
-                  style={styles.picker}
-                  onValueChange={(itemValue) => setSelectedLaboratorio(itemValue)}
-                >
-                  <Picker.Item label="Laboratorio" value="" />
-                  <Picker.Item label="Lab1" value="lab1" />
-                  <Picker.Item label="Lab2" value="lab2" />
-                  <Picker.Item label="Lab3" value="lab3" />
-                  <Picker.Item label="Lab4" value="lab4" />
-                  <Picker.Item label="Lab5" value="lab5" />
-                </Picker>
-              </View>
-            </FormControl>
-
-            {/* Fecha y Hora */}
-            <FormControl>
-              <Text style={styles.label}>Fecha y Hora</Text>
-              <HStack space="sm" style={styles.dateTimeContainer}>
-                <View style={styles.datePickerContainer}>
+          <Card size="md" variant="elevated" style={styles.formCard}>
+            <VStack space="lg" style={styles.formContainer}>
+              
+              {/* Recurso Dropdown */}
+              <FormControl>
+                <Text style={styles.label}>Recurso</Text>
+                <View style={styles.pickerContainer}>
                   <Picker
-                    selectedValue={selectedDate}
-                    style={styles.datePicker}
-                    onValueChange={(itemValue) => setSelectedDate(itemValue)}
+                    selectedValue={selectedRecurso}
+                    style={styles.picker}
+                    onValueChange={(itemValue) => setSelectedRecurso(itemValue)}
                   >
-                    <Picker.Item label="Seleccionar Fecha" value="" />
-                    <Picker.Item label="29/09/2025" value="29/09/2025" />
-                    <Picker.Item label="30/09/2025" value="30/09/2025" />
-                    <Picker.Item label="01/10/2025" value="01/10/2025" />
-                    <Picker.Item label="02/10/2025" value="02/10/2025" />
-                    <Picker.Item label="03/10/2025" value="03/10/2025" />
+                    <Picker.Item label="Recurso" value="" />
+                    <Picker.Item label="Proyector" value="proyector" />
+                    <Picker.Item label="Computadora" value="computadora" />
+                    <Picker.Item label="Pizarra Digital" value="pizarra_digital" />
+                    <Picker.Item label="Sistema de Audio" value="audio" />
+                    <Picker.Item label="Cámara" value="camara" />
                   </Picker>
                 </View>
-                
-                <View style={styles.timePickerContainer}>
+              </FormControl>
+
+              {/* Laboratorio Dropdown */}
+              <FormControl>
+                <Text style={styles.label}>Laboratorio</Text>
+                <View style={styles.pickerContainer}>
                   <Picker
-                    selectedValue={selectedHour}
-                    style={styles.timePicker}
-                    onValueChange={(itemValue) => setSelectedHour(itemValue)}
+                    selectedValue={selectedLaboratorio}
+                    style={styles.picker}
+                    onValueChange={(itemValue) => setSelectedLaboratorio(itemValue)}
                   >
-                    <Picker.Item label="Hora" value="" />
-                    <Picker.Item label="08" value="08" />
-                    <Picker.Item label="09" value="09" />
-                    <Picker.Item label="10" value="10" />
-                    <Picker.Item label="11" value="11" />
-                    <Picker.Item label="12" value="12" />
-                    <Picker.Item label="13" value="13" />
-                    <Picker.Item label="14" value="14" />
-                    <Picker.Item label="15" value="15" />
-                    <Picker.Item label="16" value="16" />
-                    <Picker.Item label="17" value="17" />
+                    <Picker.Item label="Laboratorio" value="" />
+                    <Picker.Item label="Lab1" value="lab1" />
+                    <Picker.Item label="Lab2" value="lab2" />
+                    <Picker.Item label="Lab3" value="lab3" />
+                    <Picker.Item label="Lab4" value="lab4" />
+                    <Picker.Item label="Lab5" value="lab5" />
                   </Picker>
                 </View>
+              </FormControl>
 
-                <Text style={styles.timeSeparator}>:</Text>
-
-                <View style={styles.timePickerContainer}>
-                  <Picker
-                    selectedValue={selectedMinutes}
-                    style={styles.timePicker}
-                    onValueChange={(itemValue) => setSelectedMinutes(itemValue)}
-                  >
-                    <Picker.Item label="Minutos" value="" />
-                    <Picker.Item label="00" value="00" />
-                    <Picker.Item label="15" value="15" />
-                    <Picker.Item label="30" value="30" />
-                    <Picker.Item label="45" value="45" />
-                  </Picker>
-                </View>
-              </HStack>
-            </FormControl>
-
-            {/* Attach Document Section */}
-            <FormControl>
-              <HStack space="sm" style={styles.attachContainer}>
-                <Button
-                  onPress={handleAttachDocument}
-                  variant="solid"
-                  className="bg-gray-700"
-                  size="md"
-                  style={styles.attachButton}
-                >
-                  <ButtonText className="text-white">Adjuntar motivo</ButtonText>
-                </Button>
-                
-                {documentAttached && (
-                  <View style={styles.documentIndicator}>
-                    <Text style={styles.documentText}>📄 Doc. Adjuntado</Text>
+              {/* Fecha y Hora */}
+              <FormControl>
+                <Text style={styles.label}>Fecha y Hora</Text>
+                <HStack space="sm" style={styles.dateTimeContainer}>
+                  <View style={styles.datePickerContainer}>
+                    <Picker
+                      selectedValue={selectedDate}
+                      style={styles.datePicker}
+                      onValueChange={(itemValue) => setSelectedDate(itemValue)}
+                    >
+                      <Picker.Item label="Seleccionar Fecha" value="" />
+                      <Picker.Item label="29/09/2025" value="29/09/2025" />
+                      <Picker.Item label="30/09/2025" value="30/09/2025" />
+                      <Picker.Item label="01/10/2025" value="01/10/2025" />
+                      <Picker.Item label="02/10/2025" value="02/10/2025" />
+                      <Picker.Item label="03/10/2025" value="03/10/2025" />
+                    </Picker>
                   </View>
-                )}
-              </HStack>
-            </FormControl>
+                  
+                  <View style={styles.timePickerContainer}>
+                    <Picker
+                      selectedValue={selectedHour}
+                      style={styles.timePicker}
+                      onValueChange={(itemValue) => setSelectedHour(itemValue)}
+                    >
+                      <Picker.Item label="Hora" value="" />
+                      <Picker.Item label="08" value="08" />
+                      <Picker.Item label="09" value="09" />
+                      <Picker.Item label="10" value="10" />
+                      <Picker.Item label="11" value="11" />
+                      <Picker.Item label="12" value="12" />
+                      <Picker.Item label="13" value="13" />
+                      <Picker.Item label="14" value="14" />
+                      <Picker.Item label="15" value="15" />
+                      <Picker.Item label="16" value="16" />
+                      <Picker.Item label="17" value="17" />
+                    </Picker>
+                  </View>
 
-            {/* Submit Button */}
-            <Button
-              onPress={handleSubmitRequest}
-              variant="solid"
-              className="bg-gray-700"
-              size="lg"
-              style={styles.submitButton}
-            >
-              <ButtonText className="text-white">Enviar solicitud</ButtonText>
-            </Button>
+                  <Text style={styles.timeSeparator}>:</Text>
 
-          </VStack>
-        </Card>
+                  <View style={styles.timePickerContainer}>
+                    <Picker
+                      selectedValue={selectedMinutes}
+                      style={styles.timePicker}
+                      onValueChange={(itemValue) => setSelectedMinutes(itemValue)}
+                    >
+                      <Picker.Item label="Minutos" value="" />
+                      <Picker.Item label="00" value="00" />
+                      <Picker.Item label="15" value="15" />
+                      <Picker.Item label="30" value="30" />
+                      <Picker.Item label="45" value="45" />
+                    </Picker>
+                  </View>
+                </HStack>
+              </FormControl>
+
+              {/* Attach Document Section */}
+              <FormControl>
+                <HStack space="sm" style={styles.attachContainer}>
+                  <Button
+                    onPress={handleAttachDocument}
+                    variant="solid"
+                    className="bg-gray-700"
+                    size="md"
+                    style={styles.attachButton}
+                  >
+                    <ButtonText className="text-white">Adjuntar motivo</ButtonText>
+                  </Button>
+                  
+                  {documentAttached && (
+                    <View style={styles.documentIndicator}>
+                      <Text style={styles.documentText}>📄 Doc. Adjuntado</Text>
+                    </View>
+                  )}
+                </HStack>
+              </FormControl>
+
+              {/* Submit Button */}
+              <Button
+                onPress={handleSubmitRequest}
+                variant="solid"
+                className="bg-gray-700"
+                size="lg"
+                style={styles.submitButton}
+              >
+                <ButtonText className="text-white">Enviar solicitud</ButtonText>
+              </Button>
+
+            </VStack>
+          </Card>
+        </ScrollView>
       </ScrollView>
 
       {/* Notification Tray */}
@@ -310,6 +311,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   formCard: {
+    alignItems: 'center', 
     width: '95%',
     maxWidth: 500,
     backgroundColor: '#fff',

@@ -1,19 +1,17 @@
+import NotificationTray from '@/components/NotificationTray';
 import { View } from '@/components/Themed';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Text } from '@/components/ui/text';
 import { Card } from '@/components/ui/card';
-import { FormControl } from '@/components/ui/form-control';
-import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import {
   BellIcon,
   Icon
 } from '@/components/ui/icon';
-import { useRouter } from 'expo-router';
-import { Image, ScrollView, StyleSheet } from 'react-native';
-import { useState } from 'react';
+import { Text } from '@/components/ui/text';
 import { Picker } from '@react-native-picker/picker';
-import NotificationTray from '@/components/NotificationTray';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Image, ScrollView, StyleSheet } from 'react-native';
 
 // Mock data for user reservations
 const reservasPersonales = [

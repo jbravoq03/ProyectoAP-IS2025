@@ -1,21 +1,20 @@
+import NotificationTray from '@/components/NotificationTray';
 import { View } from '@/components/Themed';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Text } from '@/components/ui/text';
 import { Card } from '@/components/ui/card';
-import { Input, InputField } from '@/components/ui/input';
 import { FormControl } from '@/components/ui/form-control';
-import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import {
   BellIcon,
-  Icon,
-  SearchIcon
+  Icon
 } from '@/components/ui/icon';
-import { useRouter } from 'expo-router';
-import { Image, ScrollView, StyleSheet, Alert } from 'react-native';
-import { useState } from 'react';
+import { Input, InputField } from '@/components/ui/input';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
 import { Picker } from '@react-native-picker/picker';
-import NotificationTray from '@/components/NotificationTray';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Alert, Image, ScrollView, StyleSheet } from 'react-native';
 
 // Mock data for resources
 const recursosData = [
@@ -151,184 +150,186 @@ export default function BusquedaLaboratorios() {
       <View style={styles.line} />
 
       {/* Main Content */}
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>Búsqueda de recursos</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <Text style={styles.title}>Búsqueda de recursos</Text>
 
-        <View style={styles.contentContainer}>
-          {/* Left side - Search and Results */}
-          <View style={styles.leftContainer}>
-            {/* Search Bar */}
-            <View style={styles.searchContainer}>
-              <Input variant="rounded" style={styles.searchInput}>
-                <InputField
-                  placeholder="Búsqueda..."
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  className="text-black"
-                />
-              </Input>
-            </View>
-
-            {/* Results Table */}
-            <Card size="md" variant="elevated" style={styles.tableCard}>
-              <View style={styles.tableHeader}>
-                <Text style={styles.headerCell}>Tipo de Recurso</Text>
-                <View style={styles.verticalSeparator} />
-                <Text style={styles.headerCell}>Laboratorio</Text>
-                <View style={styles.verticalSeparator} />
-                <Text style={styles.headerCell}>Fecha de disponibilidad</Text>
-                <View style={styles.verticalSeparator} />
-                <Text style={styles.headerCell}>Acción</Text>
+          <View style={styles.contentContainer}>
+            {/* Left side - Search and Results */}
+            <View style={styles.leftContainer}>
+              {/* Search Bar */}
+              <View style={styles.searchContainer}>
+                <Input variant="rounded" style={styles.searchInput}>
+                  <InputField
+                    placeholder="Búsqueda..."
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    className="text-black"
+                  />
+                </Input>
               </View>
 
-              <ScrollView style={styles.tableContainer}>
-                {filteredRecursos.length > 0 ? (
-                  filteredRecursos.map((recurso) => (
-                    <View key={recurso.id} style={styles.tableRow}>
-                      <Text style={styles.tableCell}>{recurso.tipoRecurso}</Text>
-                      <View style={styles.verticalSeparator} />
-                      <Text style={styles.tableCell}>{recurso.laboratorio}</Text>
-                      <View style={styles.verticalSeparator} />
-                      <Text style={styles.tableCell}>{recurso.fechaDisponibilidad}</Text>
-                      <View style={styles.verticalSeparator} />
-                      <View style={styles.actionCell}>
-                        <Button
-                          onPress={() => handleReserve(recurso)}
-                          variant="solid"
-                          className="bg-blue-500"
-                          size="sm"
-                        >
-                          <ButtonText className="text-white">Reservar</ButtonText>
-                        </Button>
-                      </View>
-                    </View>
-                  ))
-                ) : (
-                  <View style={styles.noResultsContainer}>
-                    <Text style={styles.noResultsText}>No se encontraron recursos</Text>
-                  </View>
-                )}
-                
-                {/* Empty rows to match design */}
-                <View style={styles.tableRow}>
-                  <Text style={styles.tableCell}>---</Text>
+              {/* Results Table */}
+              <Card size="md" variant="elevated" style={styles.tableCard}>
+                <View style={styles.tableHeader}>
+                  <Text style={styles.headerCell}>Tipo de Recurso</Text>
                   <View style={styles.verticalSeparator} />
-                  <Text style={styles.tableCell}>---</Text>
+                  <Text style={styles.headerCell}>Laboratorio</Text>
                   <View style={styles.verticalSeparator} />
-                  <Text style={styles.tableCell}>---</Text>
+                  <Text style={styles.headerCell}>Fecha de disponibilidad</Text>
                   <View style={styles.verticalSeparator} />
-                  <View style={styles.actionCell}>
-                    <Button variant="solid" className="bg-gray-300" size="sm" disabled>
-                      <ButtonText className="text-gray-500">Reservar</ButtonText>
-                    </Button>
-                  </View>
+                  <Text style={styles.headerCell}>Acción</Text>
                 </View>
-              </ScrollView>
-            </Card>
-          </View>
 
-          {/* Right side - Filters */}
-          <View style={styles.rightContainer}>
-            <Card size="md" variant="elevated" style={styles.filtersCard}>
-              <VStack space="md">
-                <Text style={styles.filtersTitle}>Filtros</Text>
-
-                {/* Tipo de recurso filter */}
-                <FormControl>
-                  <Text style={styles.filterLabel}>Tipo de recurso</Text>
-                  <View style={styles.filterPickerContainer}>
-                    <Picker
-                      selectedValue={selectedTipoRecurso}
-                      style={styles.filterPicker}
-                      onValueChange={(itemValue) => setSelectedTipoRecurso(itemValue)}
-                    >
-                      <Picker.Item label="Tipo de recurso" value="" />
-                      <Picker.Item label="Sala de estudio" value="Sala de estudio" />
-                      <Picker.Item label="Proyector" value="Proyector" />
-                      <Picker.Item label="Computadora" value="Computadora" />
-                      <Picker.Item label="Pizarra Digital" value="Pizarra Digital" />
-                    </Picker>
+                <ScrollView style={styles.tableContainer}>
+                  {filteredRecursos.length > 0 ? (
+                    filteredRecursos.map((recurso) => (
+                      <View key={recurso.id} style={styles.tableRow}>
+                        <Text style={styles.tableCell}>{recurso.tipoRecurso}</Text>
+                        <View style={styles.verticalSeparator} />
+                        <Text style={styles.tableCell}>{recurso.laboratorio}</Text>
+                        <View style={styles.verticalSeparator} />
+                        <Text style={styles.tableCell}>{recurso.fechaDisponibilidad}</Text>
+                        <View style={styles.verticalSeparator} />
+                        <View style={styles.actionCell}>
+                          <Button
+                            onPress={() => handleReserve(recurso)}
+                            variant="solid"
+                            className="bg-blue-500"
+                            size="sm"
+                          >
+                            <ButtonText className="text-white">Reservar</ButtonText>
+                          </Button>
+                        </View>
+                      </View>
+                    ))
+                  ) : (
+                    <View style={styles.noResultsContainer}>
+                      <Text style={styles.noResultsText}>No se encontraron recursos</Text>
+                    </View>
+                  )}
+                  
+                  {/* Empty rows to match design */}
+                  <View style={styles.tableRow}>
+                    <Text style={styles.tableCell}>---</Text>
+                    <View style={styles.verticalSeparator} />
+                    <Text style={styles.tableCell}>---</Text>
+                    <View style={styles.verticalSeparator} />
+                    <Text style={styles.tableCell}>---</Text>
+                    <View style={styles.verticalSeparator} />
+                    <View style={styles.actionCell}>
+                      <Button variant="solid" className="bg-gray-300" size="sm" disabled>
+                        <ButtonText className="text-gray-500">Reservar</ButtonText>
+                      </Button>
+                    </View>
                   </View>
-                </FormControl>
+                </ScrollView>
+              </Card>
+            </View>
 
-                {/* Laboratorio filter */}
-                <FormControl>
-                  <Text style={styles.filterLabel}>Laboratorio</Text>
-                  <View style={styles.filterPickerContainer}>
-                    <Picker
-                      selectedValue={selectedLaboratorio}
-                      style={styles.filterPicker}
-                      onValueChange={(itemValue) => setSelectedLaboratorio(itemValue)}
-                    >
-                      <Picker.Item label="Laboratorio" value="" />
-                      <Picker.Item label="Lab1" value="Lab1" />
-                      <Picker.Item label="Lab2" value="Lab2" />
-                      <Picker.Item label="Lab3" value="Lab3" />
-                      <Picker.Item label="Lab4" value="Lab4" />
-                    </Picker>
-                  </View>
-                </FormControl>
+            {/* Right side - Filters */}
+            <View style={styles.rightContainer}>
+              <Card size="md" variant="elevated" style={styles.filtersCard}>
+                <VStack space="md">
+                  <Text style={styles.filtersTitle}>Filtros</Text>
 
-                {/* Fecha de disponibilidad filter */}
-                <FormControl>
-                  <Text style={styles.filterLabel}>Fecha de disponibilidad</Text>
-                  <HStack space="xs" style={styles.dateFilterContainer}>
-                    <View style={styles.dateFilterPicker}>
+                  {/* Tipo de recurso filter */}
+                  <FormControl>
+                    <Text style={styles.filterLabel}>Tipo de recurso</Text>
+                    <View style={styles.filterPickerContainer}>
                       <Picker
-                        selectedValue={selectedDay}
-                        style={styles.smallPicker}
-                        onValueChange={(itemValue) => setSelectedDay(itemValue)}
+                        selectedValue={selectedTipoRecurso}
+                        style={styles.filterPicker}
+                        onValueChange={(itemValue) => setSelectedTipoRecurso(itemValue)}
                       >
-                        <Picker.Item label="Día" value="" />
-                        {[...Array(31)].map((_, i) => (
-                          <Picker.Item 
-                            key={i + 1} 
-                            label={String(i + 1).padStart(2, '0')} 
-                            value={String(i + 1).padStart(2, '0')} 
-                          />
-                        ))}
+                        <Picker.Item label="Tipo de recurso" value="" />
+                        <Picker.Item label="Sala de estudio" value="Sala de estudio" />
+                        <Picker.Item label="Proyector" value="Proyector" />
+                        <Picker.Item label="Computadora" value="Computadora" />
+                        <Picker.Item label="Pizarra Digital" value="Pizarra Digital" />
                       </Picker>
                     </View>
+                  </FormControl>
 
-                    <View style={styles.dateFilterPicker}>
+                  {/* Laboratorio filter */}
+                  <FormControl>
+                    <Text style={styles.filterLabel}>Laboratorio</Text>
+                    <View style={styles.filterPickerContainer}>
                       <Picker
-                        selectedValue={selectedMonth}
-                        style={styles.smallPicker}
-                        onValueChange={(itemValue) => setSelectedMonth(itemValue)}
+                        selectedValue={selectedLaboratorio}
+                        style={styles.filterPicker}
+                        onValueChange={(itemValue) => setSelectedLaboratorio(itemValue)}
                       >
-                        <Picker.Item label="Mes" value="" />
-                        <Picker.Item label="01" value="01" />
-                        <Picker.Item label="02" value="02" />
-                        <Picker.Item label="03" value="03" />
-                        <Picker.Item label="04" value="04" />
-                        <Picker.Item label="05" value="05" />
-                        <Picker.Item label="06" value="06" />
-                        <Picker.Item label="07" value="07" />
-                        <Picker.Item label="08" value="08" />
-                        <Picker.Item label="09" value="09" />
-                        <Picker.Item label="10" value="10" />
-                        <Picker.Item label="11" value="11" />
-                        <Picker.Item label="12" value="12" />
+                        <Picker.Item label="Laboratorio" value="" />
+                        <Picker.Item label="Lab1" value="Lab1" />
+                        <Picker.Item label="Lab2" value="Lab2" />
+                        <Picker.Item label="Lab3" value="Lab3" />
+                        <Picker.Item label="Lab4" value="Lab4" />
                       </Picker>
                     </View>
+                  </FormControl>
 
-                    <View style={styles.dateFilterPicker}>
-                      <Picker
-                        selectedValue={selectedYear}
-                        style={styles.smallPicker}
-                        onValueChange={(itemValue) => setSelectedYear(itemValue)}
-                      >
-                        <Picker.Item label="Año" value="" />
-                        <Picker.Item label="2025" value="2025" />
-                        <Picker.Item label="2026" value="2026" />
-                      </Picker>
-                    </View>
-                  </HStack>
-                </FormControl>
-              </VStack>
-            </Card>
+                  {/* Fecha de disponibilidad filter */}
+                  <FormControl>
+                    <Text style={styles.filterLabel}>Fecha de disponibilidad</Text>
+                    <HStack space="xs" style={styles.dateFilterContainer}>
+                      <View style={styles.dateFilterPicker}>
+                        <Picker
+                          selectedValue={selectedDay}
+                          style={styles.smallPicker}
+                          onValueChange={(itemValue) => setSelectedDay(itemValue)}
+                        >
+                          <Picker.Item label="Día" value="" />
+                          {[...Array(31)].map((_, i) => (
+                            <Picker.Item 
+                              key={i + 1} 
+                              label={String(i + 1).padStart(2, '0')} 
+                              value={String(i + 1).padStart(2, '0')} 
+                            />
+                          ))}
+                        </Picker>
+                      </View>
+
+                      <View style={styles.dateFilterPicker}>
+                        <Picker
+                          selectedValue={selectedMonth}
+                          style={styles.smallPicker}
+                          onValueChange={(itemValue) => setSelectedMonth(itemValue)}
+                        >
+                          <Picker.Item label="Mes" value="" />
+                          <Picker.Item label="01" value="01" />
+                          <Picker.Item label="02" value="02" />
+                          <Picker.Item label="03" value="03" />
+                          <Picker.Item label="04" value="04" />
+                          <Picker.Item label="05" value="05" />
+                          <Picker.Item label="06" value="06" />
+                          <Picker.Item label="07" value="07" />
+                          <Picker.Item label="08" value="08" />
+                          <Picker.Item label="09" value="09" />
+                          <Picker.Item label="10" value="10" />
+                          <Picker.Item label="11" value="11" />
+                          <Picker.Item label="12" value="12" />
+                        </Picker>
+                      </View>
+
+                      <View style={styles.dateFilterPicker}>
+                        <Picker
+                          selectedValue={selectedYear}
+                          style={styles.smallPicker}
+                          onValueChange={(itemValue) => setSelectedYear(itemValue)}
+                        >
+                          <Picker.Item label="Año" value="" />
+                          <Picker.Item label="2025" value="2025" />
+                          <Picker.Item label="2026" value="2026" />
+                        </Picker>
+                      </View>
+                    </HStack>
+                  </FormControl>
+                </VStack>
+              </Card>
+            </View>
           </View>
-        </View>
+        </ScrollView>
       </ScrollView>
 
       {/* Notification Tray */}

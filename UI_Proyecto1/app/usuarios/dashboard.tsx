@@ -1,15 +1,15 @@
+import NotificationTray from '@/components/NotificationTray';
 import { View } from '@/components/Themed';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Text } from '@/components/ui/text';
 import {
   BellIcon,
   Icon
 } from '@/components/ui/icon';
+import { Text } from '@/components/ui/text';
 import { useRouter } from 'expo-router';
-import { Image, ScrollView, StyleSheet } from 'react-native';
 import { useState } from 'react';
-import NotificationTray from '@/components/NotificationTray';
+import { Image, ScrollView, StyleSheet } from 'react-native';
 
 // Mock data for upcoming reservations
 const proximasReservas = [
@@ -114,7 +114,7 @@ export default function dashboardUsuarios() {
             <Text style={styles.headerCell}>Fecha reservada</Text>
           </View>
 
-          <ScrollView style={styles.tableContainer}>
+          <ScrollView style={styles.tableContainer} contentContainerStyle={styles.scrollContent}>
             {proximasReservas.length > 0 ? (
               proximasReservas.map((reserva) => (
                 <View key={reserva.id} style={styles.tableRow}>
@@ -184,6 +184,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
   scrollContent: {
+    flex: 1,
     alignItems: 'center',
     paddingBottom: 80,
     width: '100%',
@@ -197,12 +198,14 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   card: {
+    flex: 1,
     width: '90%',
     padding: 15,
     backgroundColor: '#fff',
     minHeight: 300,
   },
   tableContainer: {
+    flex: 1,
     maxHeight: 400,
     width: '100%',
   },
