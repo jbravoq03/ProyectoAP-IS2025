@@ -24,4 +24,3 @@ const Card = React.forwardRef<React.ComponentRef<typeof View>, ICardProps>(
 Card.displayName = 'Card';
 
 export { Card };
-
