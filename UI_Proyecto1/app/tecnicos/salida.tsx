@@ -5,19 +5,41 @@ import { Heading } from '@/components/ui/heading';
 import { Input, InputField } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { materiales } from '@/model/materiales';
+import { materiales, recursos, setMateriales } from '@/model/listStorage';
+import { Material } from '@/model/materiales';
+import { readMateriales, updateMaterial } from '@/services/moduloLab_service';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 export default function registroSalida() {
     const params = useLocalSearchParams<{ id: string }>();
-    const id = params.id
+    const id = params.id;
+
+    const idRecMat = materiales.find((m) => String(m.idMat) === String(id))?.idRec
+    
+    const nombre = recursos.find((r) => String(r.idRec) === String(idRecMat))?.nombre
     const router = useRouter();
     const [cantidad, setCantidad] = useState('');
 
+
+    const actualizarLista = async (materialMod: Material, cantidad: Number) => {
+
+        const nuevaCantidad = Number(materialMod.cantidad)- Number(cantidad);
+        materialMod.cantidad = String(nuevaCantidad)
+        const resp = await updateMaterial(materialMod);
+        console.log(resp);
+        const resMats = await readMateriales();
+        setMateriales(resMats.data);
+    
+    }
+
     const handleSalida = () => {
-        console.log(cantidad);
+        const materialModificar = materiales.find((m) => String(m.idMat) === String(id))
+
+        if (materialModificar){
+            actualizarLista(materialModificar, Number(cantidad));
+        }
         router.replace('/tecnicos/gestion_inventarios');
     };
     const handleCancelar = () => {
@@ -29,7 +51,7 @@ export default function registroSalida() {
             <View style={styles.containerCard}>
                 <FormControl className="p-4 border border-outline-200 rounded-lg w-full" style={styles.card}>
                 <VStack className="gap-4">
-                    <Heading className="text-typography-900 text-black">Registrar Salida de {String(materiales.find((item) => item.idRec === Number(id))?.idRec)}</Heading>
+                    <Heading className="text-typography-900 text-black">Registrar Salida de {nombre}</Heading>
                     <VStack space="xs">
                     <Text className="text-typography-500 text-black">Cantidad</Text>
                     <Input>

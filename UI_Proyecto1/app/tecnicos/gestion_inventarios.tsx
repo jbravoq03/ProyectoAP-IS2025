@@ -60,7 +60,7 @@ export default function gestionInventarios() {
                               <TableHead style={styles.tableContent}>Elemento</TableHead>
                               <TableHead style={styles.tableContent}>Cantidad</TableHead>
                               <TableHead style={styles.tableContent}>Medida</TableHead>
-                              <TableHead style={styles.tableContent}>Alerta</TableHead>
+                              <TableHead style={styles.tableContent}>Reorden</TableHead>
                               <TableHead style={styles.tableContent}>Acciones</TableHead>
                           </TableRow>
                       </TableHeader>
@@ -74,7 +74,7 @@ export default function gestionInventarios() {
                                   <TableData style={styles.tableContent}>{recursos.find(r => r.idRec === item.idRec)?.nombre ?? "Recurso desconocido"}</TableData>
                                   <TableData style={styles.tableContent}>{String(item.cantidad)}</TableData>
                                   <TableData style={styles.tableContent}>{String(item.medida)}</TableData>
-                                  <TableData style={styles.tableContent}> {String(item.reorden) ? 'Se debe reponer' : 'No es necesario reponer'}</TableData>
+                                  <TableData style={styles.tableContent}> {String(item.reorden)}</TableData>
                                   <TableData style={styles.tableContent}>
                                     <View style={styles.horizontalContainer}>
                                       <Button variant="solid" style={{backgroundColor: "#ffffffff", 

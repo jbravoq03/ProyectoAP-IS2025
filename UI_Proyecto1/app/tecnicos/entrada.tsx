@@ -5,7 +5,9 @@ import { Heading } from '@/components/ui/heading';
 import { Input, InputField } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { materiales, recursos } from '@/model/listStorage';
+import { materiales, recursos, setMateriales } from '@/model/listStorage';
+import { Material } from '@/model/materiales';
+import { readMateriales, updateMaterial } from '@/services/moduloLab_service';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
@@ -19,10 +21,29 @@ export default function registroEntrada() {
     const nombre = recursos.find((r) => String(r.idRec) === String(idRecMat))?.nombre
     const router = useRouter();
     const [cantidad, setCantidad] = useState('');
-    console.log(nombre);
+
+
+    const actualizarLista = async (materialMod: Material, cantidad: Number) => {
+
+        const nuevaCantidad = Number(materialMod.cantidad)+ Number(cantidad);
+        materialMod.cantidad = String(nuevaCantidad)
+        const resp = await updateMaterial(materialMod);
+        console.log(resp);
+        const resMats = await readMateriales();
+        setMateriales(resMats.data);
+   
+        
+    }
 
     const handleRegistro = () => {
-        console.log(cantidad);
+  
+        const materialModificar = materiales.find((m) => String(m.idMat) === String(id))
+
+        if (materialModificar){
+            actualizarLista(materialModificar, Number(cantidad));
+        }
+        
+
         router.replace('/tecnicos/gestion_inventarios');
     };
     const handleCancelar = () => {
