@@ -29,7 +29,7 @@ export default function registroSalida() {
             <View style={styles.containerCard}>
                 <FormControl className="p-4 border border-outline-200 rounded-lg w-full" style={styles.card}>
                 <VStack className="gap-4">
-                    <Heading className="text-typography-900 text-black">Registrar Salida de {materiales.find((item) => item.id === Number(id))?.nombre}</Heading>
+                    <Heading className="text-typography-900 text-black">Registrar Salida de {String(materiales.find((item) => item.idRec === Number(id))?.idRec)}</Heading>
                     <VStack space="xs">
                     <Text className="text-typography-500 text-black">Cantidad</Text>
                     <Input>

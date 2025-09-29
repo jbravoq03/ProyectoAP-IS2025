@@ -27,10 +27,6 @@ export default function registroMantenimeinto() {
     const [mes, setMes] = useState("");
     const [anio, setAnio] = useState("");
 
-    const filteredRecursos = bitacRecursos.filter(r =>
-        r.nombre.toLowerCase().includes(recurso.toLowerCase())
-    );
-
     const handleRegistro = () => {
         const fecha = new Date(Number(anio), Number(mes), Number(dia) )
         console.log("Usuario conectado:", userId);
@@ -74,14 +70,14 @@ export default function registroMantenimeinto() {
                             }}>
                                 {bitacRecursos.map(item => (
                                 <TouchableOpacity
-                                    key={item.idRec}
+                                    key={String(item.idRecurso)}
                                     onPress={() => {
-                                    setRecurso(item.nombre);
+                                    setRecurso(String(item.idRecurso));
                                     setShowList(false);
                                     }}
                                     style={{ padding: 10 }}
                                 >
-                                    <Text className="text-black">{item.nombre}</Text>
+                                    <Text className="text-black">{String(item.idRecurso)}</Text>
                                 </TouchableOpacity>
                                 ))}
                             </View>

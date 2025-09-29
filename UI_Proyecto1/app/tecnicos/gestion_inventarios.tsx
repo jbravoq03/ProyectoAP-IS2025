@@ -59,30 +59,30 @@ export default function gestionInventarios() {
                         <TableRow>
                             <TableHead style={styles.tableContent}>Elemento</TableHead>
                             <TableHead style={styles.tableContent}>Cantidad</TableHead>
-                            <TableHead style={styles.tableContent}>Estado</TableHead>
+                            <TableHead style={styles.tableContent}>Medida</TableHead>
                             <TableHead style={styles.tableContent}>Alerta</TableHead>
                             <TableHead style={styles.tableContent}>Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {materiales.map((item) => ( 
-                            <TableRow key={item.id}>
-                                <TableData style={styles.tableContent}>{item.nombre}</TableData>
-                                <TableData style={styles.tableContent}>{item.cantidad}</TableData>
-                                <TableData style={styles.tableContent}>{item.estado}</TableData>
-                                <TableData style={styles.tableContent}> {item.alerta ? 'Se debe reponer' : 'No es necesario reponer'}</TableData>
+                            <TableRow key={String(item.idMat)}>
+                                <TableData style={styles.tableContent}>{String(item.idMat)}</TableData>
+                                <TableData style={styles.tableContent}>{String(item.cantidad)}</TableData>
+                                <TableData style={styles.tableContent}>{String(item.medida)}</TableData>
+                                <TableData style={styles.tableContent}> {String(item.reorden) ? 'Se debe reponer' : 'No es necesario reponer'}</TableData>
                                 <TableData style={styles.tableContent}>
                                   <View style={styles.horizontalContainer}>
                                     <Button variant="solid" style={{backgroundColor: "#ffffffff", 
                                         borderColor: "#000000", 
                                         borderWidth: 2,}}
-                                        size="sm" action="secondary" onPress={() => handleRegistro(item.id)}>
+                                        size="sm" action="secondary" onPress={() => handleRegistro(Number(item.idMat))}>
                                         <ButtonText style={{ color: "#000" }}>Entrada</ButtonText>
                                     </Button>
                                     <Button variant="solid" style={{backgroundColor: "#ffffffff", 
                                         borderColor: "#000000", 
                                         borderWidth: 2,}}
-                                        size="sm" action="secondary" onPress={() => handleSalida(item.id)}>
+                                        size="sm" action="secondary" onPress={() => handleSalida(Number(item.idMat))}>
                                         <ButtonText style={{ color: "#000" }}>Salida</ButtonText>
                                     </Button>
                                   </View>

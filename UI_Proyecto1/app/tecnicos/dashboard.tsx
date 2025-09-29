@@ -68,19 +68,19 @@ export default function dashboardTecnicos() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {solicitudes.map((item) => (
           <Card
-            key={item.id}
+            key={String(item.idSolic)}
             className="p-5 rounded-lg bg-white border border-black"
             style={styles.card} 
           >
             <VStack className="mb-6">
               <Heading size="md" className="mb-4 text-black">
-                {item.nombre}
+                {`Solicitud ${item.idSolic}`}
               </Heading>
               <Text size="sm" className="text-black">
-                Nombre del solicitante: {item.solicitante}{"\n"}
-                Recurso solicitado: {item.recsolicitado}{"\n"}
-                Fecha de Solicitud: {item.fechasoli}{"\n"}
-                Fecha de entrega: {item.fechaentreg}{"\n"}
+                Nombre del solicitante: {String(item.idUsr)}{"\n"}
+                Recurso solicitado: {String(item.idRec)}{"\n"}
+                Fecha de Solicitud: {String(item.fechaSoli)}{"\n"}
+                Fecha de entrega: {String(item.fechaResp)}{"\n"}
               </Text>
             </VStack>
             <Box className="flex-col sm:flex-row">

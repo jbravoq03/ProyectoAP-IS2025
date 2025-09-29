@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/table';
 import { Text } from '@/components/ui/text';
 import { bitacRecursos } from '@/model/bitacoraRecursos';
-import { getEmail } from '@/model/login';
+import { getEmail, getUser } from '@/model/login';
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet } from 'react-native';
 
@@ -27,6 +27,8 @@ export default function mantenimientos() {
 
     const handleRegistro = () => {
       const mail = getEmail();
+      const idUser = getUser();
+      console.log(idUser);
       router.replace(`/tecnicos/registro_mantenimiento?mail=${mail}`);
     };
 
@@ -67,9 +69,9 @@ export default function mantenimientos() {
                         </TableHeader>
                         <TableBody>
                             {bitacRecursos.map((item) => ( 
-                                <TableRow style={styles.tableContentRow} key={item.idRec}>
-                                    <TableData style={styles.tableContent}>{item.nombre}</TableData>
-                                    <TableData style={styles.tableContent}>{item.nombreUsuario}</TableData>
+                                <TableRow style={styles.tableContentRow} key={String(item.idRecurso)}>
+                                    <TableData style={styles.tableContent}>{String(item.idRecurso)}</TableData>
+                                    <TableData style={styles.tableContent}>{String(item.idUsuario)}</TableData>
                                     <TableData style={styles.tableContent}>{item.accion}</TableData>
                                     <TableData style={styles.tableContent}>{item.fecha.toString()}</TableData>
                                     <TableData style={styles.tableContent}>{item.descripcion}</TableData>
