@@ -109,8 +109,8 @@ def iniciarSesion(pCorreo, pContrasena):
             .eq("contrasena", pContrasena)
             .execute()
         )
-        if response.data:
-            return True
+        if response.data and len(response.data) > 0:
+            return response
         else:
             return False
 
