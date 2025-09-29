@@ -1,4 +1,4 @@
 export type DptoCarrera = {
-  idDc?: string;
+  idDc: Number;
   nombre: string;
 };

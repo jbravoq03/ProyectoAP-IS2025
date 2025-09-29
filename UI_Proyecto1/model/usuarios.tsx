@@ -1,7 +1,7 @@
 export type usuario = {
-  idUsr?: string;
-  idRol: string;
-  idDc: string;
+  idUsr: Number;
+  idRol: Number;
+  idDc: Number;
   idInsti: string;
   correoInsti: string;
   nombre: string;

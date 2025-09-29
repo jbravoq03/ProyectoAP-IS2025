@@ -1,41 +1,35 @@
 export type bitacoraRec = {
-  idRec: number;
-  nombre: string;
-  idUsuario: number;
-  nombreUsuario: string;
+  idBitac: Number;
+  idRecurso: Number;
+  idUsuario: Number;
   accion: string;
   fecha: Date;
   descripcion: string;
-
 };
 
 export const bitacRecursos: bitacoraRec[] = [
   {
-    idRec: 1,
-    nombre: "Laptops",
+    idBitac: 1,
+    idRecurso: 1,
     idUsuario: 1,
-    nombreUsuario: 'U1',
     accion: "Limpieza general",
-    fecha: new Date("2025-01-01T00:00:00"),
+    fecha: new Date("2025-01-01"),
     descripcion: "No hubo problemas",
   },
   {
-    idRec: 2,
-    nombre: "Impresoras",
+    idBitac: 2,
+    idRecurso: 2,
     idUsuario: 1,
-    nombreUsuario: 'U1',
     accion: "Cambio de tinta",
-    fecha: new Date("2025-01-01T00:00:00"),
+    fecha: new Date("2025-01-01"),
     descripcion: "No hubo problemas",
   },
   {
-    idRec: 3,
-    nombre: "Laboratorio",
+    idBitac: 3,
+    idRecurso: 3,
     idUsuario: 1,
-    nombreUsuario: 'U1',
     accion: "Limpieza",
-    fecha: new Date("2025-01-01T00:00:00"),
+    fecha: new Date("2025-01-01"),
     descripcion: "No hubo problemas",
   },
-  
 ];

@@ -1,36 +1,47 @@
 export type Solicitud = {
-  id: number;
-  nombre: string;
-  solicitante: string;
-  fechasoli: string;
-  fechaentreg: string;
-  recsolicitado: string;
-
+  idSolic: Number;
+  idLab: Number;
+  idRec: Number;
+  idUsr: Number;
+  fechaSoli: Date;
+  estado: string;
+  motivo: string;
+  adjunto: string;
+  fechaResp?: Date;
 };
 
 export const solicitudes: Solicitud[] = [
   {
-    id: 1,
-    nombre: 'Solicitud 1',
-    solicitante: 'Juan',
-    recsolicitado: 'Reparación de equipo de laboratorio',
-    fechasoli: '22/09/25',
-    fechaentreg: '23/09/25',
+    idSolic: 1,
+    idUsr: 1,
+    idRec: 101,
+    idLab: 1,
+    estado: 'Pendiente',
+    motivo: 'Problema con el equipo',
+    adjunto: '',
+    fechaSoli: new Date("2025-09-22"),
+    fechaResp: new Date("2025-09-23"),
   },
   {
-    id: 2,
-    nombre: 'Solicitud 2',
-    solicitante: 'Juan',
-    recsolicitado: 'Compra de reactivos químicos',
-    fechasoli: '23/09/25',
-    fechaentreg: '23/09/25',
+    idSolic: 2,
+    idUsr: 1,
+    idRec: 102,
+    idLab: 2,
+    estado: 'Completada',
+    motivo: 'Necesidad de reactivos para experimentos',
+    adjunto: '',
+    fechaSoli: new Date("2025-09-23"),
+    fechaResp: new Date("2025-09-23"),
   },
   {
-    id: 3,
-    nombre: 'Solicitud 3',
-    solicitante: 'Juan',
-    recsolicitado: 'Mantenimiento preventivo de equipos',
-    fechasoli: '23/09/25',
-    fechaentreg: '23/09/25',
+    idSolic: 3,
+    idUsr: 1,
+    idRec: 103,
+    idLab: 3,
+    estado: 'En proceso',
+    motivo: 'Revisión periódica de equipos',
+    adjunto: '',
+    fechaSoli: new Date("2025-09-23"),
+    fechaResp: new Date("2025-09-23"),
   },
 ];

@@ -1,4 +1,4 @@
 export type Rol = {
-  idRol?: string;
+  idRol: Number;
   nombre: string;
 };

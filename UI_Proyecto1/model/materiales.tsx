@@ -1,33 +1,32 @@
 export type Material = {
-  id: number;
-  nombre: string;
-  cantidad: number;
-  estado: string;
-  alerta: boolean;
-
+  idMat: Number;
+  idRec: Number;
+  cantidad: string;
+  medida: string;
+  reorden: boolean;
 };
 
 export const materiales: Material[] = [
   {
-    id: 1,
-    nombre: 'Lapices',
-    cantidad: 100,
-    estado: '22/09/25',
-    alerta: false,
+    idMat: 1,
+    idRec: 1,
+    cantidad: "100",
+    medida: 'Cajas',
+    reorden: false,
   },
   {
-    id: 2,
-    nombre: 'Tinta',
-    cantidad: 12,
-    estado: 'Disponible',
-    alerta: true,
+    idMat: 2,
+    idRec: 2,
+    cantidad: "12",
+    medida: 'Botellas',
+    reorden: true,
   },
   {
-    id: 3,
-    nombre: 'Papel',
-    cantidad: 20,
-    estado: 'Disponible',
-    alerta: false,
+    idMat: 3,
+    idRec: 3,
+    cantidad: "20",
+    medida: 'Disponible',
+    reorden: false,
   },
   
 ];

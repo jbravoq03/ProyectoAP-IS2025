@@ -1,5 +1,5 @@
 export type ParamGlob = {
-  idParam?: string;
+  idParam: Number;
   nombre: string;
   valor: string;
   descripcion: string;
