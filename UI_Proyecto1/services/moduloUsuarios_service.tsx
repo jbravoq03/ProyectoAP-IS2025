@@ -1,13 +1,14 @@
 import { usuario } from "@/model/usuarios";
+
 const API_URL = "http://localhost:5000/usuarios";
 
-// Comprobación de estado
+// -------------------- STATUS --------------------
 export const checkStatusUsuarios = async (): Promise<string> => {
   const res = await fetch(`${API_URL}/status`);
   return res.text();
 };
 
-// Crear usuario
+// -------------------- CRUD USUARIOS --------------------
 export const createUsuario = async (usr: usuario): Promise<any> => {
   const res = await fetch(`${API_URL}/create`, {
     method: "POST",
@@ -17,25 +18,20 @@ export const createUsuario = async (usr: usuario): Promise<any> => {
   return res.json();
 };
 
-// Leer todos los usuarios
-export const readUsuarios = async (): Promise<usuario[]> => {
+export const readUsuarios = async (): Promise<any> => {
   const res = await fetch(`${API_URL}/read`);
-  const data = await res.json();
-  return data.data;
+  return res.json();
 };
 
-// Leer un usuario por id
-export const readUsuario = async (idUsr: string): Promise<usuario> => {
+export const readUsuario = async (idUsr: string): Promise<any> => {
   const res = await fetch(`${API_URL}/readu`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ idUsr }),
   });
-  const data = await res.json();
-  return data.data;
+  return res.json();
 };
 
-// Actualizar usuario
 export const updateUsuario = async (usr: usuario): Promise<any> => {
   const res = await fetch(`${API_URL}/update`, {
     method: "POST",
@@ -45,7 +41,6 @@ export const updateUsuario = async (usr: usuario): Promise<any> => {
   return res.json();
 };
 
-// Eliminar usuario
 export const deleteUsuario = async (idUsr: string): Promise<any> => {
   const res = await fetch(`${API_URL}/delete`, {
     method: "POST",
@@ -55,7 +50,7 @@ export const deleteUsuario = async (idUsr: string): Promise<any> => {
   return res.json();
 };
 
-// Login de usuario
+// -------------------- LOGIN --------------------
 export const loginUsuario = async (
   correoInsti: string,
   contrasena: string
