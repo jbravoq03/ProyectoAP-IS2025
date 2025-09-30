@@ -48,7 +48,7 @@ def readOneResponsables(pIdResp):
         response = (
             supabase.table(tabla)
             .select("*")
-            .eq("idResp", pIdResp)
+            .eq("idUsr", pIdResp)
             .execute()
         )
         return response
