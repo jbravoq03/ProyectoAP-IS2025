@@ -68,7 +68,7 @@ export default function repoOperativos() {
             Datos de consumo
           </Text>
           <Heading size="md" className="mb-4 text-black">
-            Consulta los datos de consumo de los recursos
+            Consulta los datos de consumo de los materiales
           </Heading>
           <Button onPress={handleConsumoMat} variant="solid" className="px-4 py-2 mr-0 mb-3 sm:mr-3 sm:mb-0 sm:flex-1" size="md" action="primary">
             <ButtonText className="text-black">Consultar</ButtonText>

@@ -5,13 +5,15 @@ import { Card } from '@/components/ui/card';
 import { Heading } from '@/components/ui/heading';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { BitAccion } from '@/model/bitacAcciones';
+import { bitacoraRec } from "@/model/bitacoraRecursos";
 import { Laboratorio } from '@/model/laboratorios';
 import { recursos, setRecursos, setResponsable, setSolicitudes, solicitudes, usuarios } from "@/model/listStorage";
 import { getUser } from '@/model/login';
 import { Recurso } from '@/model/recursos';
 import { Solicitud } from '@/model/solicitudes';
 import { readLaboratorio, readRecursos, readResponsable, updateRecurso } from '@/services/moduloLab_service';
-import { readSolicitudes, updateSolicitud } from '@/services/moduloTecEnc_service';
+import { createBitAccion, createBitRecurso, readSolicitudes, updateSolicitud } from '@/services/moduloTecEnc_service';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from "react";
 import { Image, ScrollView, StyleSheet } from 'react-native';
@@ -63,16 +65,18 @@ export default function dashboardTecnicos() {
       router.replace('/tecnicos/repoOperativos');
   };
 
-   const actualizarLista = async (recursoAct: Recurso, solicitud: Solicitud) => {
+   const actualizarLista = async (recursoAct: Recurso, solicitud: Solicitud, nuevaEntrada: BitAccion, nuevaEntradaR: bitacoraRec | null) => {
 
     const resp1 = await updateRecurso(recursoAct);
     const resp2 = await updateSolicitud(solicitud);
-    console.log(resp1, resp2);
     const resRecursos = await readRecursos();
     setRecursos(resRecursos.data);
     const resSolicitudes = await readSolicitudes();
     setSolicitudes(resSolicitudes.data);
-    
+    const resp3 = await createBitAccion(nuevaEntrada);
+    if (nuevaEntradaR){
+      const resp4 = await createBitRecurso(nuevaEntradaR);
+    }
    }
 
   const handleAceptar = (id: Number) => {
@@ -85,8 +89,45 @@ export default function dashboardTecnicos() {
           solicitud.estado = "Aprobada";
           solicitud.fechaResp = new Date();
           recursoAct.estado = "Ocupado";
-          actualizarLista(recursoAct, solicitud);
+
+          const nuevaEntrada: BitAccion = {
+              idBitac: 0,
+              idUsuario: Number(idUser), 
+              accion: "Aprobada",
+              descripcion: `Solicitud con id ${id} fue aprobada, recurso ${solicitud.idRec} ocupado`,
+              fecha: new Date(),
+          };
+
+          const nuevaEntradaRec: bitacoraRec = {
+            idBitac: 0,
+            idRecurso: Number(solicitud.idRec),
+            idUsuario: Number(idUser),
+            accion: "Reserva",
+            fecha: new Date(),
+            descripcion: `Recurso ${recursoAct.nombre} fue ocupado/reservado`,
+          };
+
+          actualizarLista(recursoAct, solicitud, nuevaEntrada, nuevaEntradaRec);
           setRefreshKey(prev => prev + 1);
+          
+        } else{
+          const recursoAct = recursos.find(r => r.idRec === solicitud.idRec);
+          if (recursoAct){
+
+            solicitud.estado = "Rechazada";
+            solicitud.fechaResp = new Date();
+            const nuevaEntrada: BitAccion = {
+                idBitac: 0,
+                idUsuario: Number(idUser), 
+                accion: "Rechazo",
+                descripcion: `Solicitud con id ${id} fue rechazada`,
+                fecha: new Date(),
+            };
+
+            actualizarLista(recursoAct, solicitud, nuevaEntrada, null);
+            setRefreshKey(prev => prev + 1);
+          
+          }
           
         }
 
@@ -102,18 +143,25 @@ export default function dashboardTecnicos() {
 
     if (solicitud) {
       const recursoAct = recursos.find(r => r.idRec === solicitud.idRec);
-      if (recursoAct?.estado === "Ocupado"){
+
+      if (recursoAct){
         solicitud.estado = "Rechazada";
         solicitud.fechaResp = new Date();
-        actualizarLista(recursoAct, solicitud);
-        setRefreshKey(prev => prev + 1);
-        
-      }
+        const nuevaEntrada: BitAccion = {
+            idBitac: 0,
+            idUsuario: Number(idUser), 
+            accion: "Rechazo",
+            descripcion: `Solicitud con id ${id} fue rechazada`,
+            fecha: new Date(),
+        };
 
+        actualizarLista(recursoAct, solicitud, nuevaEntrada, null);
+        setRefreshKey(prev => prev + 1);
       
-    } else {
-      console.warn("Solicitud no encontrada");
-    }
+      } else {
+        console.warn("Solicitud no encontrada");
+      }
+  }
 
   };
 

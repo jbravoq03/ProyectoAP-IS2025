@@ -5,9 +5,12 @@ import { Heading } from '@/components/ui/heading';
 import { Input, InputField } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { materiales, recursos, setMateriales } from '@/model/listStorage';
+import { bitacoraRec } from "@/model/bitacoraRecursos";
+import { materiales, recursos, setBitRec, setMateriales } from '@/model/listStorage';
+import { getUser } from '@/model/login';
 import { Material } from '@/model/materiales';
 import { readMateriales, updateMaterial } from '@/services/moduloLab_service';
+import { createBitRecurso, readBitRecursos } from '@/services/moduloTecEnc_service';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
@@ -15,6 +18,7 @@ import { StyleSheet } from 'react-native';
 export default function registroSalida() {
     const params = useLocalSearchParams<{ id: string }>();
     const id = params.id;
+    const idUsuario = getUser();
 
     const idRecMat = materiales.find((m) => String(m.idMat) === String(id))?.idRec
     
@@ -31,6 +35,18 @@ export default function registroSalida() {
         console.log(resp);
         const resMats = await readMateriales();
         setMateriales(resMats.data);
+        const nuevaEntradaRec: bitacoraRec = {
+            idBitac: 0,
+            idRecurso: Number(materialMod.idRec),
+            idUsuario: Number(idUsuario),
+            accion: "Salida",
+            fecha: new Date(),
+            descripcion: `Salida de ${cantidad} de material: ${nombre}`,
+        };
+        
+        const resp2 = await createBitRecurso(nuevaEntradaRec);
+        const resbitRec = await readBitRecursos();
+        setBitRec(resbitRec.data);
     
     }
 

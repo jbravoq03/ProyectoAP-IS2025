@@ -5,20 +5,21 @@ import { Heading } from '@/components/ui/heading';
 import { Input, InputField } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { bitacRecursos } from '@/model/bitacoraRecursos';
+import { bitacoraRec } from '@/model/bitacoraRecursos';
+import { recursos, recursosFijos, responsable, setBitRec } from '@/model/listStorage';
 import { getUser } from '@/model/login';
+import { createBitRecurso, readBitRecursos } from '@/services/moduloTecEnc_service';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 
-
 export default function registroMantenimeinto() {
+
 
     const router = useRouter();
     const userId = getUser();
     const params = useLocalSearchParams<{ mail: string }>();
     const userMail = params.mail;
-    const [mantenimiento, setMantenimiento] = useState("");
     const [recurso, setRecurso] = useState("");
     const [showList, setShowList] = useState(false);
     const [observaciones, setObservaciones] = useState("");
@@ -27,14 +28,42 @@ export default function registroMantenimeinto() {
     const [mes, setMes] = useState("");
     const [anio, setAnio] = useState("");
 
+    const idUser = getUser();
+    const idUsrLab = responsable?.idLab
+    
+    const recursosFijosMostrar = recursos.filter((recurso) =>
+        recursosFijos.some((rf) => rf.idRec === recurso.idRec)
+    );
+    const recursosFijosLabActual = recursosFijosMostrar.filter(
+        (recurso) => recurso.idLab === Number(idUsrLab)
+    );
+
+    const actualizarLista = async (recurso: Number, desc: String, fecha: Date) => {
+       
+        const nuevaEntradaRec: bitacoraRec = {
+        idBitac: 0,
+        idRecurso: Number(recurso),
+        idUsuario: Number(idUser),
+        accion: "Mantenimiento",
+        fecha: fecha,
+        descripcion: `${desc}`,
+        };
+        
+        const resp = await createBitRecurso(nuevaEntradaRec);
+        const resbitRec = await readBitRecursos();
+        setBitRec(resbitRec.data);
+        router.replace('/tecnicos/mantenimiento');
+        
+    }
+    
+
     const handleRegistro = () => {
         const fecha = new Date(Number(anio), Number(mes), Number(dia) )
         console.log("Usuario conectado:", userId);
         console.log(fecha);
-        console.log(mantenimiento);
         console.log(observaciones);
-        console.log(recurso);
-        router.replace('/tecnicos/mantenimiento');
+        console.log(Number(recurso));
+        actualizarLista(Number(recurso), observaciones, fecha);
     };
     const handleCancelar = () => {
         router.replace('/tecnicos/mantenimiento');
@@ -54,7 +83,7 @@ export default function registroMantenimeinto() {
                             size="md"
                             onPress={() => setShowList(!showList)}
                         >
-                            <ButtonText>{recurso || "Selecciona un recurso"}</ButtonText>
+                            <ButtonText>{recursos.find((r) => r.idRec === Number(recurso))?.nombre || "Selecciona un recurso"}</ButtonText>
                         </Button>
                         {showList && (
                             <View style={{
@@ -68,18 +97,21 @@ export default function registroMantenimeinto() {
                                 maxHeight: 200,
                                 zIndex: 10,
                             }}>
-                                {bitacRecursos.map(item => (
-                                <TouchableOpacity
-                                    key={String(item.idRecurso)}
-                                    onPress={() => {
-                                    setRecurso(String(item.idRecurso));
-                                    setShowList(false);
-                                    }}
-                                    style={{ padding: 10 }}
-                                >
-                                    <Text className="text-black">{String(item.idRecurso)}</Text>
-                                </TouchableOpacity>
-                                ))}
+                                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContentV}>
+                                    {recursosFijosLabActual.map(item => (
+                                    <TouchableOpacity
+                                        key={String(item.idRec)}
+                                        onPress={() => {
+                                        setRecurso(String(item.idRec));
+                                        setShowList(false);
+                                        }}
+                                        style={{ padding: 10 }}
+                                    >
+                                        <Text className="text-black">{recursos.find((r) => r.idRec === item.idRec)?.nombre || "Desconocido"}</Text>
+                                    </TouchableOpacity>
+                                    
+                                    ))} 
+                                </ScrollView>
                             </View>
                             )}
                  
@@ -132,16 +164,7 @@ export default function registroMantenimeinto() {
                             editable={false}
                             />
                         </Input>
-                        <Text className="text-typography-500 text-black">Mantenimiento:</Text>
-                        <Input>
-                            <InputField
-                            className="text-black"
-                            placeholder="Tipo de mantenimiento"
-                            value={mantenimiento}
-                            onChangeText={setMantenimiento}
-                            />
-                        </Input>
-                        <Text className="text-typography-500 text-black">Observaciones:</Text>
+                        <Text className="text-typography-500 text-black">Descripcion:</Text>
                         <Input>
                             <InputField
                             className="text-black"
@@ -150,7 +173,10 @@ export default function registroMantenimeinto() {
                             onChangeText={setObservaciones}
                             />
                         </Input>
-                        <Button className="ml-auto" variant='solid' action="secondary" onPress={handleRegistro}>
+                        <Button className="ml-auto" variant='solid' action="secondary" onPress={handleRegistro}
+                                disabled={
+                                    !dia || !mes || !anio || !observaciones || !recurso
+                                }>
                             <ButtonText>Registrar</ButtonText>
                         </Button>
                         <Button className="ml-auto" variant="solid" action="secondary" onPress={handleCancelar}>

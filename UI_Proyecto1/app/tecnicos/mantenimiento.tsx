@@ -13,13 +13,44 @@ import {
   TableRow
 } from '@/components/ui/table';
 import { Text } from '@/components/ui/text';
-import { bitacRecursos } from '@/model/bitacoraRecursos';
+import { bitacoraRecursos, recursos, responsable, setBitRec, setRecFijos, usuarios } from '@/model/listStorage';
 import { getEmail, getUser } from '@/model/login';
+import { readRecFijos } from '@/services/moduloLab_service';
+import { readBitRecursos } from '@/services/moduloTecEnc_service';
 import { useRouter } from 'expo-router';
+import { useEffect } from "react";
 import { ScrollView, StyleSheet } from 'react-native';
+
 
 export default function mantenimientos() {
   const router = useRouter();
+  const idUser = getUser();
+  const idUsrLab = responsable?.idLab
+  const recursosMostrar = recursos.filter(
+    (recurso) => recurso.idLab === Number(idUsrLab)
+  );
+  const idsRecursos = recursosMostrar.map((rec) => rec.idRec);
+  const bitacRecursosMostrar = bitacoraRecursos.filter(
+    (entrada) => idsRecursos.includes(entrada.idRecurso)
+  );
+  console.log(bitacRecursosMostrar);
+
+   useEffect(() => {
+    const fetchData = async () => {
+      try {
+
+        const resbitRec = await readBitRecursos();
+        setBitRec(resbitRec.data);
+
+        const resRecFijos = await readRecFijos();
+        setRecFijos(resRecFijos.data);
+        
+      } catch (err) {
+        console.error("Error al cargar datos:", err);
+      }
+    };
+    fetchData();
+  }, []);
 
    const handleMenu = () => {
       router.replace(`/tecnicos/dashboard`);
@@ -64,14 +95,14 @@ export default function mantenimientos() {
                                 <TableHead style={styles.tableContent}>Responsable</TableHead>
                                 <TableHead style={styles.tableContent}>Tipo</TableHead>
                                 <TableHead style={styles.tableContent}>Fecha</TableHead>
-                                <TableHead style={styles.tableContent}>Observaciones</TableHead>
+                                <TableHead style={styles.tableContent}>Descripcion</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {bitacRecursos.map((item) => ( 
-                                <TableRow style={styles.tableContentRow} key={String(item.idRecurso)}>
-                                    <TableData style={styles.tableContent}>{String(item.idRecurso)}</TableData>
-                                    <TableData style={styles.tableContent}>{String(item.idUsuario)}</TableData>
+                            {bitacRecursosMostrar.filter(item => item.accion.toLowerCase().includes("mantenimiento")).map((item) => ( 
+                                <TableRow style={styles.tableContentRow} key={String(item.idBitac)}>
+                                    <TableData style={styles.tableContent}>{recursos.find((r) => r.idRec === item.idRecurso)?.nombre || "Desconocido"}</TableData>
+                                    <TableData style={styles.tableContent}>{usuarios.find((u) => u.idUsr === item.idUsuario)?.correoInsti || "Desconocido"}</TableData>
                                     <TableData style={styles.tableContent}>{item.accion}</TableData>
                                     <TableData style={styles.tableContent}>{item.fecha.toString()}</TableData>
                                     <TableData style={styles.tableContent}>{item.descripcion}</TableData>
