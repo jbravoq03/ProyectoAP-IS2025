@@ -5,7 +5,7 @@ import { Input, InputField } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { BitAccion } from '@/model/bitacAcciones';
-import { materiales, recursos, recursosFijos, setMateriales, setRecFijos } from '@/model/listStorage';
+import { materiales, recursos, recursosFijos, responsable, setMateriales, setRecFijos } from '@/model/listStorage';
 import { getUser } from '@/model/login';
 import { Material } from '@/model/materiales';
 import { RecursoFijo } from '@/model/recFijos';
@@ -28,6 +28,7 @@ export default function registroRecurso() {
   const [cantidad, setCantidad] = useState("");
   const [medida, setMedida] = useState("");
   const [reorden, setReorden] = useState("");
+  const idLab = responsable?.idLab;
 
   const idUser = getUser();
 
@@ -35,7 +36,10 @@ export default function registroRecurso() {
 
 
   const recursosDisponibles = recursos.filter(
-    (r) => !recursosFijos.some((rf) => rf.idRec === r.idRec) && !materiales?.some((m) => m.idRec === r.idRec)
+    (r) =>
+      r.idLab === Number(idLab) &&
+      !recursosFijos.some((rf) => rf.idRec === r.idRec) &&
+      !materiales?.some((m) => m.idRec === r.idRec)
   );
 
   const tipos = ["Consumible", "Fijo"];
