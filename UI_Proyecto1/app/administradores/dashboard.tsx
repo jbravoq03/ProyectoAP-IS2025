@@ -5,10 +5,16 @@ import { Text } from '@/components/ui/text';
 import { Card } from '@/components/ui/card';
 
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
-import { Image, ScrollView, StyleSheet } from 'react-native';
+import { Image, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
+
+import { 
+  getReservasTotales, 
+  getMantenimientosActivos, 
+  getRecursosMasUsados 
+} from '@/services/moduloAdmin_service';
 
 export default function dashboardAdmins() {
 
@@ -39,8 +45,80 @@ export default function dashboardAdmins() {
       router.replace('/administradores/reportes_institucionales');
   }
 
-  const [selectedYear, setSelectedYear] = useState('2025');
-  const [selectedMonth, setSelectedMonth] = useState('9');
+  const [selectedYear, setSelectedYear] = useState('todos');
+  const [selectedMonth, setSelectedMonth] = useState('todos');
+
+  const [metricas, setMetricas] = useState({
+    reservasTotales: [] as any[],
+    mantenimientosActivos: [] as any[],
+    recursosMasUsados: [] as any[]
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // 🔹 Cargar métricas del dashboard
+  const cargarMetricasDashboard = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Convertir a números para el backend
+      const year = parseInt(selectedYear);
+      const month = parseInt(selectedMonth);
+
+      const params = new URLSearchParams();
+      // Solo agregar parámetros si no son "todos"
+      if (selectedYear !== 'todos') {
+        params.append('year', selectedYear);
+      }
+      if (selectedMonth !== 'todos') {
+        params.append('month', selectedMonth);
+      }
+
+      const [reservasRes, mantenimientosRes, recursosRes] = await Promise.all([
+        getReservasTotales(params.toString()),
+        getMantenimientosActivos(params.toString()),
+        getRecursosMasUsados(params.toString())
+      ]);
+
+      setMetricas({
+        reservasTotales: reservasRes.data || [],
+        mantenimientosActivos: mantenimientosRes.data || [],
+        recursosMasUsados: recursosRes.data || []
+      });
+
+    } catch (err) {
+      setError('Error al cargar las métricas del dashboard');
+      console.error('Error loading dashboard metrics:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    cargarMetricasDashboard();
+  }, [selectedYear, selectedMonth]); // Recargar cuando cambien los filtros
+
+  if (loading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text style={styles.loadingText}>Cargando métricas...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+        <Button onPress={cargarMetricasDashboard} variant="solid" size="sm">
+          <ButtonText>Reintentar</ButtonText>
+        </Button>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
@@ -96,6 +174,7 @@ export default function dashboardAdmins() {
             style={{...styles.picker, backgroundColor: '#f0f0f0', marginRight: 9}}
             onValueChange={(itemValue) => setSelectedMonth(itemValue)}
           >
+            <Picker.Item label="Todos los meses " value="todos" />
             <Picker.Item label="Enero" value="1" />
             <Picker.Item label="Febrero" value="2" />
             <Picker.Item label="Marzo" value="3" />
@@ -115,6 +194,7 @@ export default function dashboardAdmins() {
             style={{...styles.picker, backgroundColor: '#f0f0f0'}}
             onValueChange={(itemValue) => setSelectedYear(itemValue)}
           >
+            <Picker.Item label="Todos los años" value="todos" />
             <Picker.Item label="2025" value="2025" />
             <Picker.Item label="2024" value="2024" />
             <Picker.Item label="2023" value="2023" />
@@ -146,60 +226,23 @@ export default function dashboardAdmins() {
           <Card size="md" variant="elevated" className="m-3 w-11/12" style={{...styles.card, backgroundColor: '#f0f0f0' }}>
             <View style={styles.tableHeader}>
               <Text style={styles.headerCellLeft}>Reservas Totales</Text>
-              {/* Separador vertical */}
               <View style={styles.verticalSeparator} />
-              <Text style={styles.headerCellRight}>Fecha Reservada</Text>
+              <Text style={styles.headerCellRight}>Cantidad</Text>
             </View>
-
             <ScrollView style={styles.tableContainer}>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCellLeft}>Laboratorio A</Text>
-                {/* Separador vertical */}
-                <View style={styles.verticalSeparator} />
-                <Text style={styles.tableCellRight}>12 reservas</Text>
-              </View>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCellLeft}>Laboratorio B</Text>
-                {/* Separador vertical */}
-                <View style={styles.verticalSeparator} />
-                <Text style={styles.tableCellRight}>8 reservas</Text>
-              </View>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCellLeft}>Laboratorio C</Text>
-                {/* Separador vertical */}
-                <View style={styles.verticalSeparator} />
-                <Text style={styles.tableCellRight}>15 reservas</Text>
-              </View>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCellLeft}>Laboratorio D</Text>
-                {/* Separador vertical */}
-                <View style={styles.verticalSeparator} />
-                <Text style={styles.tableCellRight}>12 reservas</Text>
-              </View>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCellLeft}>Laboratorio E</Text>
-                {/* Separador vertical */}
-                <View style={styles.verticalSeparator} />
-                <Text style={styles.tableCellRight}>8 reservas</Text>
-              </View>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCellLeft}>Laboratorio F</Text>
-                {/* Separador vertical */}
-                <View style={styles.verticalSeparator} />
-                <Text style={styles.tableCellRight}>15 reservas</Text>
-              </View>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCellLeft}>Laboratorio G</Text>
-                {/* Separador vertical */}
-                <View style={styles.verticalSeparator} />
-                <Text style={styles.tableCellRight}>10 reservas</Text>
-              </View>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCellLeft}>Laboratorio H</Text>
-                {/* Separador vertical */}
-                <View style={styles.verticalSeparator} />
-                <Text style={styles.tableCellRight}>5 reservas</Text>
-              </View>
+              {metricas.reservasTotales.length > 0 ? (
+                metricas.reservasTotales.map((item: any, index: number) => (
+                  <View key={index} style={styles.tableRow}>
+                    <Text style={styles.tableCellLeft}>{item.laboratorio}</Text>
+                    <View style={styles.verticalSeparator} />
+                    <Text style={styles.tableCellRight}>{item.reservas} reservas</Text>
+                  </View>
+                ))
+              ) : (
+                <View style={styles.tableRow}>
+                  <Text style={styles.noDataText}>No hay reservas aprobadas</Text>
+                </View>
+              )}
             </ScrollView>
           </Card>
 
@@ -207,23 +250,23 @@ export default function dashboardAdmins() {
           <Card size="md" variant="elevated" className="m-3 w-11/12" style={{...styles.card, backgroundColor: '#f0f0f0' }}>
             <View style={styles.tableHeader}>
               <Text style={styles.headerCellLeft}>Mantenimientos Activos</Text>
-              {/* Separador vertical */}
               <View style={styles.verticalSeparator} />
-              <Text style={styles.headerCellRight}>Fecha finalización</Text>
+              <Text style={styles.headerCellRight}>Estado</Text>
             </View>
             <ScrollView style={styles.tableContainer}>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCellLeft}>Proyector A</Text>
-                {/* Separador vertical */}
-                <View style={styles.verticalSeparator} />
-                <Text style={styles.tableCellRight}>En curso</Text>
-              </View>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCellLeft}>Computadora B</Text>
-                {/* Separador vertical */}
-                <View style={styles.verticalSeparator} />
-                <Text style={styles.tableCellRight}>Pendiente</Text>
-              </View>
+              {metricas.mantenimientosActivos.length > 0 ? (
+                metricas.mantenimientosActivos.map((item: any, index: number) => (
+                  <View key={index} style={styles.tableRow}>
+                    <Text style={styles.tableCellLeft}>{item.recurso}</Text>
+                    <View style={styles.verticalSeparator} />
+                    <Text style={styles.tableCellRight}>{item.estado}</Text>
+                  </View>
+                ))
+              ) : (
+                <View style={styles.tableRow}>
+                  <Text style={styles.noDataText}>No hay mantenimientos activos</Text>
+                </View>
+              )}
             </ScrollView>
           </Card>
 
@@ -231,29 +274,23 @@ export default function dashboardAdmins() {
           <Card size="md" variant="elevated" className="m-3 w-11/12" style={{...styles.card, backgroundColor: '#f0f0f0' }}>
             <View style={styles.tableHeader}>
               <Text style={styles.headerCellLeft}>Recursos más usados</Text>
-              {/* Separador vertical */}
               <View style={styles.verticalSeparator} />
               <Text style={styles.headerCellRight}>Usos</Text>
             </View>
             <ScrollView style={styles.tableContainer}>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCellLeft}>Proyector</Text>
-                {/* Separador vertical */}
-                <View style={styles.verticalSeparator} />
-                <Text style={styles.tableCellRight}>48 usos</Text>
-              </View>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCellLeft}>Laptop</Text>
-                {/* Separador vertical */}
-                <View style={styles.verticalSeparator} />
-                <Text style={styles.tableCellRight}>35 usos</Text>
-              </View>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCellLeft}>Pizarra</Text>
-                {/* Separador vertical */}
-                <View style={styles.verticalSeparator} />
-                <Text style={styles.tableCellRight}>20 usos</Text>
-              </View>
+              {metricas.recursosMasUsados.length > 0 ? (
+                metricas.recursosMasUsados.map((item: any, index: number) => (
+                  <View key={index} style={styles.tableRow}>
+                    <Text style={styles.tableCellLeft}>{item.recurso}</Text>
+                    <View style={styles.verticalSeparator} />
+                    <Text style={styles.tableCellRight}>{item.usos} usos</Text>
+                  </View>
+                ))
+              ) : (
+                <View style={styles.tableRow}>
+                  <Text style={styles.noDataText}>No hay datos de uso</Text>
+                </View>
+              )}
             </ScrollView>
           </Card>
         </ScrollView>
@@ -286,6 +323,24 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     gap: 8,
     paddingVertical: 10,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffffff',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#666',
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 10,
+    textAlign: 'center',
+    fontSize: 16,
   },
   line: {
     marginTop: 4,
@@ -376,6 +431,14 @@ const styles = StyleSheet.create({
     paddingLeft: 25,
     marginTop: 8,
     marginBottom: 8,
+  },
+  noDataText: {
+    fontSize: 14,
+    color: '#666',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    flex: 1,
+    paddingVertical: 8,
   },
   tableHeader: {
     flexDirection: 'row',

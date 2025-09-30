@@ -3,3 +3,5 @@
 /UI_Proyecto1/.expo/web/
 /UI_Proyecto1/node_modules
 /UI_Proyecto1/.expo/README.md
+/FlaskAPI/API/__pycache__/
+/FlaskAPI/Controladores_Tablas/__pycache__/

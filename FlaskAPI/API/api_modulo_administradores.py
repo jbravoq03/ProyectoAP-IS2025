@@ -2,6 +2,14 @@ from flask import Blueprint, render_template, jsonify, request
 from Controladores_Tablas.controlador_roles import *
 from Controladores_Tablas.controlador_dptoCarrera import *
 from Controladores_Tablas.controlador_parametrosGlob import *
+from Controladores_Tablas.controlador_etiquetas import *
+
+# endpoints para dashboard
+from Controladores_Tablas.controlador_solicitudes import readSolicitudes
+from Controladores_Tablas.controlador_bitacoraRecursos import readBitRecursos
+from Controladores_Tablas.controlador_recursos import readRecursos, readOneRecursos
+from datetime import datetime
+import re
 
 # Se define el blueprint
 administradores_bp = Blueprint('administradores',
@@ -250,9 +258,12 @@ def delete_dptocar():
 """
 {
     "idParam": "",
-    "nombre": "",
-    "valor": "",
-    "descripcion": ""
+    "duracionMaxima": "",
+    "antelacion": "",
+    "reservasSimultaneas": "",
+    "idEtiqueta": "",
+    "canalesEnvio": "",
+    "tiempoNotificar": ""
 }
 """
 #Endpoint para crear parametros globales
@@ -261,12 +272,15 @@ def create_paramglob():
 
     # Lectura del JSON
     entrada = request.get_json()
-    nombre = entrada["nombre"]
-    valor = entrada["valor"]
-    descripcion = entrada["descripcion"]
+    duracionMaxima = entrada["duracionMaxima"]
+    antelacion = entrada["antelacion"]
+    reservasSimultaneas = entrada["reservasSimultaneas"]
+    idEtiqueta = entrada["idEtiqueta"]
+    canalesEnvio = entrada["canalesEnvio"]
+    tiempoNotificar = entrada["tiempoNotificar"]
 
     # Creacion del parametro global en la BD
-    respuesta = createParametrosGlob(nombre, valor, descripcion)
+    respuesta = createParametrosGlob(duracionMaxima, antelacion, reservasSimultaneas, idEtiqueta, canalesEnvio, tiempoNotificar)
 
     if respuesta != 501:
         # Se convierte la respuesta en un JSON
@@ -304,12 +318,15 @@ def update_paramglob():
     #Lectura del JSON
     entrada = request.get_json()
     idParam = entrada["idParam"]
-    nombre = entrada["nombre"]
-    valor = entrada["valor"]
-    descripcion = entrada["descripcion"]
+    duracionMaxima = entrada["duracionMaxima"]
+    antelacion = entrada["antelacion"]
+    reservasSimultaneas = entrada["reservasSimultaneas"]
+    idEtiqueta = entrada["idEtiqueta"]
+    canalesEnvio = entrada["canalesEnvio"]
+    tiempoNotificar = entrada["tiempoNotificar"]
 
     #Se modifica el parametros globales en la BD
-    respuesta = updateParametrosGlob(idParam, nombre, valor, descripcion)
+    respuesta = updateParametrosGlob(idParam, duracionMaxima, antelacion, reservasSimultaneas, idEtiqueta, canalesEnvio, tiempoNotificar)
 
     if respuesta != 501:
         # Se convierte la respuesta en un JSON
@@ -345,3 +362,297 @@ def delete_paramglob():
 
     # Retorno de la respuesta
     return resp
+
+#-------------------------------------
+# Tabla de Etiquetas
+
+#Cuerpo del JSON para los POST:
+"""
+{
+    "idEtiqueta": "",
+    "tag": ""
+}
+"""
+#Endpoint para crear etiquetas
+@administradores_bp.route('/etiqueta/create', methods=['POST'])
+def create_etiqueta():
+    entrada = request.get_json()
+    tag = entrada["tag"]
+
+    respuesta = createEtiqueta(tag)
+
+    if respuesta != 501:
+        resp = jsonify({
+            "data": respuesta.data,
+            "count": getattr(respuesta, "count", None)
+        })
+    else:
+        resp = "Error en la BD"
+
+    return resp
+
+#Endpoint que retorna todas las etiquetas
+@administradores_bp.route('/etiqueta/read', methods=['GET'])
+def read_etiquetas():
+    respuesta = readEtiquetas()
+
+    if respuesta != 501:
+        resp = jsonify({
+            "data": respuesta.data
+        })
+    else:
+        resp = "Error en la BD"
+
+    return resp
+
+#Endpoint que retorna una etiqueta
+@administradores_bp.route('/etiqueta/readu', methods=['POST'])
+def readUnique_etiqueta():
+    entrada = request.get_json()
+    idEtiqueta = entrada["idEtiqueta"]
+
+    respuesta = readOneEtiqueta(idEtiqueta)
+
+    if respuesta != 501:
+        resp = jsonify({
+            "data": respuesta.data
+        })
+    else:
+        resp = "Error en la BD"
+
+    return resp
+
+#Endpoint para modificar etiquetas
+@administradores_bp.route('/etiqueta/update', methods=['POST'])
+def update_etiqueta():
+    entrada = request.get_json()
+    idEtiqueta = entrada["idEtiqueta"]
+    tag = entrada["tag"]
+
+    respuesta = updateEtiqueta(idEtiqueta, tag)
+
+    if respuesta != 501:
+        resp = jsonify({
+            "data": respuesta.data,
+            "count": getattr(respuesta, "count", None)
+        })
+    else:
+        resp = "Error en la BD"
+
+    return resp
+
+#Endpoint que elimina una etiqueta
+@administradores_bp.route('/etiqueta/delete', methods=['POST'])
+def delete_etiqueta():
+    entrada = request.get_json()
+    idEtiqueta = entrada["idEtiqueta"]
+
+    respuesta = deleteEtiqueta(idEtiqueta)
+
+    if respuesta != 501:
+        resp = jsonify({
+            "data": respuesta.data,
+            "count": getattr(respuesta, "count", None)
+        })
+    else:
+        resp = "Error en la BD"
+
+    return resp
+
+#-------------------------------------
+# Endpoints para métricas del dashboard
+
+# Endpoint para reservas totales
+@administradores_bp.route('/metricas/reservas_totales', methods=['GET'])
+def get_reservas_totales():
+    try:
+        # Obtener parámetros de fecha (opcionales)
+        year = request.args.get('year', type=int)
+        month = request.args.get('month', type=int)
+        
+        # Obtener todas las solicitudes
+        respuesta = readSolicitudes()
+        
+        if respuesta != 501:
+            # Filtrar solo las aprobadas
+            solicitudes_aprobadas = [s for s in respuesta.data if s.get('estado') == 'Aprobada']
+            
+            # Filtrar por fecha solo si se proporcionan ambos parámetros y no son None
+            if year is not None and month is not None:
+                solicitudes_filtradas = []
+                for solicitud in solicitudes_aprobadas:
+                    fecha_soli = solicitud.get('fechaSoli')
+                    if fecha_soli:
+                        # Convertir fecha string a objeto datetime
+                        try:
+                            # Manejar diferentes formatos de fecha
+                            if 'T' in fecha_soli:
+                                # Formato: 2025-09-29T00:00:00
+                                fecha_obj = datetime.strptime(fecha_soli.split('T')[0], '%Y-%m-%d')
+                            else:
+                                # Formato: 2025-09-29
+                                fecha_obj = datetime.strptime(fecha_soli, '%Y-%m-%d')
+                            
+                            if fecha_obj.year == year and fecha_obj.month == month:
+                                solicitudes_filtradas.append(solicitud)
+                        except Exception as e:
+                            print(f"Error parseando fecha {fecha_soli}: {e}")
+                            continue
+                solicitudes_aprobadas = solicitudes_filtradas
+            
+            # Contar por laboratorio
+            conteo_laboratorios = {}
+            for solicitud in solicitudes_aprobadas:
+                id_lab = solicitud.get('idLab')
+                if id_lab:
+                    conteo_laboratorios[id_lab] = conteo_laboratorios.get(id_lab, 0) + 1
+            
+            # Formatear respuesta
+            data = [{"laboratorio": f"Laboratorio {lab_id}", "reservas": count} 
+                   for lab_id, count in conteo_laboratorios.items()]
+            return jsonify({"data": data})
+        else:
+            print("Error en la BD al leer solicitudes")
+            return "Error en la BD", 500
+            
+    except Exception as e:
+        print(f"Error en reservas_totales: {e}")
+        return "Error interno del servidor", 500
+
+# Endpoint para mantenimientos activos
+@administradores_bp.route('/metricas/mantenimientos_activos', methods=['GET'])
+def get_mantenimientos_activos():
+    try:
+        # Obtener parámetros de fecha (opcionales)
+        year = request.args.get('year', type=int)
+        month = request.args.get('month', type=int)
+        
+        # Obtener toda la bitácora y recursos
+        respuesta_bitacora = readBitRecursos()
+        respuesta_recursos = readRecursos()
+        
+        if respuesta_bitacora != 501 and respuesta_recursos != 501:
+            # Crear diccionario de recursos para búsqueda rápida
+            recursos_dict = {r['idRec']: r for r in respuesta_recursos.data}
+            
+            # Filtrar solo mantenimientos
+            mantenimientos = [m for m in respuesta_bitacora.data if m.get('accion') == 'Mantenimiento']
+            
+            # Filtrar por fecha solo si se proporcionan ambos parámetros y no son None
+            if year is not None and month is not None:
+                mantenimientos_filtrados = []
+                for mantenimiento in mantenimientos:
+                    fecha_bitacora = mantenimiento.get('fecha')
+                    if fecha_bitacora:
+                        try:
+                            # Manejar diferentes formatos de fecha
+                            if 'T' in fecha_bitacora:
+                                fecha_obj = datetime.strptime(fecha_bitacora.split('T')[0], '%Y-%m-%d')
+                            else:
+                                fecha_obj = datetime.strptime(fecha_bitacora, '%Y-%m-%d')
+                            
+                            if fecha_obj.year == year and fecha_obj.month == month:
+                                mantenimientos_filtrados.append(mantenimiento)
+                        except Exception as e:
+                            print(f"Error parseando fecha {fecha_bitacora}: {e}")
+                            continue
+                mantenimientos = mantenimientos_filtrados
+            
+            # Filtrar recursos que estén en estado "Mantenimiento" y obtener nombres
+            recursos_mantenimiento = {}
+            for mant in mantenimientos:
+                id_recurso = mant.get('idRecurso')
+                if id_recurso and id_recurso in recursos_dict:
+                    recurso = recursos_dict[id_recurso]
+                    if recurso.get('estado') == 'Mantenimiento':
+                        # Usar el nombre del recurso en lugar del ID
+                        nombre_recurso = recurso.get('nombre', f'Recurso {id_recurso}')
+                        fecha_mant = mant.get('fecha', 'Fecha no disponible')
+                        
+                        # Solo agregar una vez por recurso (evitar duplicados)
+                        if id_recurso not in recursos_mantenimiento:
+                            recursos_mantenimiento[id_recurso] = {
+                                "recurso": nombre_recurso, 
+                                "estado": "En mantenimiento",
+                                "fecha_inicio": fecha_mant
+                            }
+            
+            # Convertir a lista
+            data = list(recursos_mantenimiento.values())
+            return jsonify({"data": data})
+        else:
+            print("Error en la BD al leer bitácora o recursos")
+            return "Error en la BD", 500
+            
+    except Exception as e:
+        print(f"Error en mantenimientos_activos: {e}")
+        return "Error interno del servidor", 500
+
+# Endpoint para recursos más usados - ACTUALIZADO
+@administradores_bp.route('/metricas/recursos_mas_usados', methods=['GET'])
+def get_recursos_mas_usados():
+    try:
+        # Obtener parámetros de fecha (opcionales)
+        year = request.args.get('year', type=int)
+        month = request.args.get('month', type=int)
+        
+        # Obtener toda la bitácora y recursos
+        respuesta_bitacora = readBitRecursos()
+        respuesta_recursos = readRecursos()
+        
+        if respuesta_bitacora != 501 and respuesta_recursos != 501:
+            # Filtrar solo salidas
+            salidas = [s for s in respuesta_bitacora.data if s.get('accion') == 'Salida']
+            
+            # Filtrar por fecha solo si se proporcionan ambos parámetros y no son None
+            if year is not None and month is not None:
+                salidas_filtradas = []
+                for salida in salidas:
+                    fecha_bitacora = salida.get('fecha')
+                    if fecha_bitacora:
+                        try:
+                            # Manejar diferentes formatos de fecha
+                            if 'T' in fecha_bitacora:
+                                fecha_obj = datetime.strptime(fecha_bitacora.split('T')[0], '%Y-%m-%d')
+                            else:
+                                fecha_obj = datetime.strptime(fecha_bitacora, '%Y-%m-%d')
+                            
+                            if fecha_obj.year == year and fecha_obj.month == month:
+                                salidas_filtradas.append(salida)
+                        except Exception as e:
+                            print(f"⚠️ Error parseando fecha {fecha_bitacora}: {e}")
+                            continue
+                salidas = salidas_filtradas
+            
+            # Contar usos por recurso
+            usos_por_recurso = {}
+            for salida in salidas:
+                id_recurso = salida.get('idRecurso')
+                descripcion = salida.get('descripcion', '')
+                
+                # Extraer número de la descripción usando regex
+                numeros = re.findall(r'\d+', descripcion)
+                cantidad = int(numeros[0]) if numeros else 1
+                
+                usos_por_recurso[id_recurso] = usos_por_recurso.get(id_recurso, 0) + cantidad
+            
+            # Obtener nombres de recursos
+            recursos_dict = {r['idRec']: r['nombre'] for r in respuesta_recursos.data}
+            
+            # Formatear respuesta
+            data = []
+            for id_recurso, usos in usos_por_recurso.items():
+                nombre_recurso = recursos_dict.get(id_recurso, f"Recurso {id_recurso}")
+                data.append({"recurso": nombre_recurso, "usos": usos})
+            
+            # Ordenar por usos (descendente) y tomar top 5
+            data.sort(key=lambda x: x['usos'], reverse=True)
+            data = data[:5]
+            return jsonify({"data": data})
+        else:
+            print("Error en la BD al leer bitácora o recursos")
+            return "Error en la BD", 500
+            
+    except Exception as e:
+        print(f"Error en recursos_mas_usados: {e}")
+        return "Error interno del servidor", 500

@@ -1,8 +1,11 @@
 import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
+from pathlib import Path
 
-load_dotenv(dotenv_path="var.env")
+# 🔹 Cargar var.env
+env_path = Path(__file__).parent / 'var.env'
+load_dotenv(env_path)
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
@@ -14,14 +17,19 @@ def conectarBD():
     supabase: Client = create_client(url, key)
     return supabase
 
-def createParametrosGlob(pNombre, pValor, pDescrpcion):
+def createParametrosGlob(pDuracionMaxima, pAntelacion, pReservasSimultaneas, pIdEtiqueta, pCanalesEnvio, pTiempoNotificar):
     try:
         supabase = conectarBD()
         response = (
             supabase.table(tabla)
-            .insert({"nombre": pNombre,
-                     "valor": pValor,
-                     "descripcion": pDescrpcion})
+            .insert({
+                "duracionMaxima": pDuracionMaxima,
+                "antelacion": pAntelacion,
+                "reservasSimultaneas": pReservasSimultaneas,
+                "idEtiqueta": pIdEtiqueta,
+                "canalesEnvio": pCanalesEnvio,
+                "tiempoNotificar": pTiempoNotificar
+            })
             .execute()
         )
         return response
@@ -56,14 +64,19 @@ def readOneParametrosGlob(pIdParam):
         print(error)
         return 501
 
-def updateParametrosGlob(pIdParam, pNombre, pValor, pDescrpcion):
+def updateParametrosGlob(pIdParam, pDuracionMaxima, pAntelacion, pReservasSimultaneas, pIdEtiqueta, pCanalesEnvio, pTiempoNotificar):
     try:
         supabase = conectarBD()
         response = (
             supabase.table(tabla)
-            .update({"nombre": pNombre,
-                     "valor": pValor,
-                     "descripcion": pDescrpcion})
+            .update({
+                "duracionMaxima": pDuracionMaxima,
+                "antelacion": pAntelacion,
+                "reservasSimultaneas": pReservasSimultaneas,
+                "idEtiqueta": pIdEtiqueta,
+                "canalesEnvio": pCanalesEnvio,
+                "tiempoNotificar": pTiempoNotificar
+            })
             .eq("idParam", pIdParam)
             .execute()
         )

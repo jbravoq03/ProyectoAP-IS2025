@@ -1,6 +1,7 @@
 import { DptoCarrera } from "@/model/dptocar";
 import { ParamGlob } from "@/model/paramGlob";
 import { Rol } from "@/model/roles";
+import { Etiqueta } from "@/model/etiqueta";
 
 const API_URL = "http://localhost:5000/administradores";
 
@@ -124,5 +125,63 @@ export const deleteParamGlob = async (idParam: string) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ idParam }),
   });
+  return res.json();
+};
+
+// -------------------- ETIQUETAS --------------------
+export const createEtiqueta = async (etiqueta: Etiqueta) => {
+  const res = await fetch(`${API_URL}/etiqueta/create`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(etiqueta),
+  });
+  return res.json();
+};
+
+export const readEtiquetas = async (): Promise<any> => {
+  const res = await fetch(`${API_URL}/etiqueta/read`);
+  return res.json();
+};
+
+export const readEtiqueta = async (idEtiqueta: number): Promise<any> => {
+  const res = await fetch(`${API_URL}/etiqueta/readu`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ idEtiqueta }),
+  });
+  return res.json();
+};
+
+export const updateEtiqueta = async (etiqueta: Etiqueta) => {
+  const res = await fetch(`${API_URL}/etiqueta/update`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(etiqueta),
+  });
+  return res.json();
+};
+
+export const deleteEtiqueta = async (idEtiqueta: number) => {
+  const res = await fetch(`${API_URL}/etiqueta/delete`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ idEtiqueta }),
+  });
+  return res.json();
+};
+
+// -------------------- MÉTRICAS DASHBOARD --------------------
+export const getReservasTotales = async (params: string = ''): Promise<any> => {
+  const res = await fetch(`${API_URL}/metricas/reservas_totales?${params}`);
+  return res.json();
+};
+
+export const getMantenimientosActivos = async (params: string = ''): Promise<any> => {
+  const res = await fetch(`${API_URL}/metricas/mantenimientos_activos?${params}`);
+  return res.json();
+};
+
+export const getRecursosMasUsados = async (params: string = ''): Promise<any> => {
+  const res = await fetch(`${API_URL}/metricas/recursos_mas_usados?${params}`);
   return res.json();
 };
