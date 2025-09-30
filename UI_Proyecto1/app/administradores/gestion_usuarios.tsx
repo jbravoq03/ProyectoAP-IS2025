@@ -20,17 +20,18 @@ export default function gestionusuariosAdmins() {
   };
 
   const [searchName, setSearchName] = useState('');
+  const [searchEmail, setSearchEmail] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
   type User = { nombre: string; correo: string; rol: string };
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   const users: User[] = [
-    { nombre: 'Juan Pérez', correo: 'juan.perez@tec.cr', rol: 'Administrador' },
-    { nombre: 'María Gómez', correo: 'maria.gomez@tec.cr', rol: 'Encargado' },
-    { nombre: 'Carlos Rojas', correo: 'carlos.rojas@tec.cr', rol: 'Docente' },
-    { nombre: 'Ana Rodríguez', correo: 'ana.rodriguez@tec.cr', rol: 'Técnico' },
-    { nombre: 'Luis Fernández', correo: 'luis.fernandez@tec.cr', rol: 'Usuario' },
-    { nombre: 'Sofía Ramírez', correo: 'sofia.ramirez@tec.cr', rol: 'Técnico' },
+    { nombre: 'Juan Pérez', correo: 'juan.perez@tec.ac.cr', rol: 'Administrador' },
+    { nombre: 'María Gómez', correo: 'maria.gomez@tec.ac.cr', rol: 'Tecnico/Encargado' },
+    { nombre: 'Carlos Rojas', correo: 'carlos.rojas@itcr.ac.cr', rol: 'Usuario' },
+    { nombre: 'Ana Rodríguez', correo: 'ana.rodriguez@itcr.ac.cr', rol: 'TTecnico/Encargado' },
+    { nombre: 'Luis Fernández', correo: 'luis.fernandez@estudiante.tec.ac.cr', rol: 'Usuario' },
+    { nombre: 'Sofía Ramírez', correo: 'sofia.ramirez@estudiante.tec.ac.cr', rol: 'Tecnico/Encargado' },
   ];
 
   const handleModify = () => {
@@ -48,6 +49,43 @@ export default function gestionusuariosAdmins() {
       console.log(`Seleccione un usuario`);
       return;
     }
+
+    // Validación de cambio de rol según correo
+    const correo = selectedUser.correo;
+    let permitido = false;
+    let mensaje = '';
+    if (correo.endsWith('@estudiante.tec.ac.cr')) {
+      if (["Usuario", "Tecnico/Encargado"].includes(selectedRole)) {
+        permitido = true;
+      } else {
+        mensaje = 'Solo puede asignar Usuario, Tecnico/Encargado a correos de estudiante.';
+      }
+    } else if (correo.endsWith('@itcr.ac.cr')) {
+      if (["Usuario", "Técnico", "Encargado"].includes(selectedRole)) {
+        permitido = true;
+      } else {
+        mensaje = 'Solo puede asignar Usuario, Tecnico o Encargado a correos de profesor.';
+      }
+    } else if (correo.endsWith('@tec.ac.cr')) {
+      if (["Administrador", "Lab/Departamento", "Tecnico/Encargado"].includes(selectedRole)) {
+        permitido = true;
+      } else {
+        mensaje = 'Solo puede asignar Administrador, Lab/Departamento o Tecnico/Encargado a correos institucionales.';
+      }
+    } else {
+      mensaje = 'Dominio de correo no reconocido para cambio de rol.';
+    }
+
+    if (!permitido) {
+      if (isWeb) {
+        window.alert(mensaje);
+      } else {
+        Alert.alert('No permitido', mensaje);
+      }
+      return;
+    }
+
+    // Confirmación y cambio de rol
     if (isWeb) {
       const confirm = window.confirm(`¿Deseas cambiar el rol de ${selectedUser.nombre} a ${selectedRole}?`);
       if (confirm) {
@@ -71,6 +109,7 @@ export default function gestionusuariosAdmins() {
   };
 
   return (
+    <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
     <View style={styles.container}>
       {/* Inicio Menú principal*/}
       <View style={styles.horizontalContainer}>
@@ -79,7 +118,7 @@ export default function gestionusuariosAdmins() {
           showsHorizontalScrollIndicator={true}
           contentContainerStyle={styles.horizontalContainer}
         >
-          <Text style={{...styles.title, paddingBottom: 10, paddingLeft: 70 }}>Gestión de usuarios y roles</Text>
+          <Text style={{...styles.title, paddingBottom: 10, paddingLeft: 120, paddingRight: 30 }}>Gestión de usuarios y roles</Text>
           <Button onPress={handleReturn} variant="solid" className="bg-white" size="md" action="primary"
           style={{ alignContent: 'center', justifyContent: 'center' }}>
             <ButtonText className="text-black">Regresar</ButtonText>
@@ -89,7 +128,7 @@ export default function gestionusuariosAdmins() {
 
       {/* 🔹 Filtros */}
       
-      <View style={styles.filterContainer}>
+      <View style={{...styles.filterContainer, flexDirection: 'column' }}>
           <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={true}
@@ -130,10 +169,10 @@ export default function gestionusuariosAdmins() {
             <View style={styles.tableHeader}>
               <Text style={styles.headerCellName}>Nombre Completo</Text>
               {/* Separador vertical */}
-              <View style={[styles.verticalSeparator, { right: 1.5, paddingRight: 2.5 }]} />
+              <View style={[styles.verticalSeparator]} />
               <Text style={styles.headerCellEmail}>Correo</Text>
               {/* Separador vertical */}
-              <View style={[styles.verticalSeparator, { right: 12, paddingLeft: 2.2 }]} />
+              <View style={[styles.verticalSeparator]} />
               <Text style={styles.headerCellRole}>Rol</Text>
             </View>
 
@@ -148,6 +187,7 @@ export default function gestionusuariosAdmins() {
                     ]}
                     onPress={() => {
                     setSelectedUser(u);
+                    setSearchEmail(u.correo);
                     setSelectedRole(u.rol);
                     }}
                     activeOpacity={0.7} // le da feedback visual
@@ -170,10 +210,9 @@ export default function gestionusuariosAdmins() {
                 onValueChange={(itemValue) => setSelectedRole(itemValue)}
                 >
                 <Picker.Item label="Administrador" value="Administrador" />
-                <Picker.Item label="Técnico" value="Técnico" />
-                <Picker.Item label="Encargado" value="Encargado" />
-                <Picker.Item label="Docente" value="Docente" />
-                <Picker.Item label="Estudiante" value="Estudiante" />
+                <Picker.Item label="Usuario" value="Usuario" />
+                <Picker.Item label="Lab/Departamento" value="Lab/Departamento" />
+                <Picker.Item label="Tecnico/Encargado" value="Tecnico/Encargado" />
                 </Picker>
 
                 <Button
@@ -194,11 +233,19 @@ export default function gestionusuariosAdmins() {
         </View>
 
     </View>
+    </ScrollView>
   );
 }
 
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flex: 1,
+    backgroundColor: '#ffffffff',
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
   container: {
     flex: 1,
     alignItems: 'center', 
@@ -212,12 +259,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     gap: 8,
     paddingVertical: 10,
-  },
-  line: {
-    marginTop: 4,
-    height: 2,
-    width: '100%',
-    backgroundColor: '#000',
   },
   title: {
     fontSize: 22,
@@ -238,19 +279,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    width: '25%',
+    width: '100%',
     marginVertical: 10,
     paddingHorizontal: 10,
-  },
-  filterBox: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  filterLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    color: '#000',
   },
   input: {
     height: 40,
@@ -267,106 +298,92 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
   },
-  cardsContainer: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    width: '100%',
-    height: '100%',
-    marginTop: 10,
-    gap: 20,
-  },
   card: {
     width: 1000,
     padding: 15,
     backgroundColor: '#fff',
     minHeight: 600,
   },
-  scrollContent: {
-    alignItems: 'center',
-    paddingBottom: 80,
-  },
   tableContainer: {
     maxHeight: 1000, // espacio de elem mostrados sin scrollear
     width: '100%',
   },
+  // 🔹 ESTILOS MEJORADOS PARA LA TABLA
   tableHeader: {
     flexDirection: 'row',
     borderBottomWidth: 2,
     borderBottomColor: '#ccc',
     backgroundColor: '#f4f4f4',
+    paddingHorizontal: 10, // Mismo padding que las filas
   },
   tableRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
-    paddingHorizontal: 10,
+    paddingHorizontal: 10, // Mismo padding que el header
     backgroundColor: '#ffffffff',
   },
+  
+  // 🔹 HEADER CELLS - MISMOS FLEX QUE LAS CELDAS NORMALES
   headerCellName: {
     flex: 2,
     fontWeight: 'bold',
     fontSize: 16,
     color: '#000',
-    paddingLeft: 15,
-    marginTop: 8,
-    marginBottom: 8,
+    paddingVertical: 12, // Mismo padding vertical
+    textAlign: 'left',
   },
   headerCellEmail: {
     flex: 2,
     fontWeight: 'bold',
     fontSize: 16,
     color: '#000',
-    paddingLeft: 15,
-    marginTop: 8,
-    marginBottom: 8,
+    paddingVertical: 12,
+    textAlign: 'left',
+    paddingLeft: 10,
   },
   headerCellRole: {
     flex: 1,
     fontWeight: 'bold',
     fontSize: 16,
     color: '#000',
+    paddingVertical: 12,
     textAlign: 'left',
-    paddingLeft: 7,
-    marginTop: 8,
-    marginBottom: 8,
+    paddingLeft: 10,
   },
+  
+  // 🔹 TABLE CELLS - MISMOS FLEX QUE EL HEADER
   tableCellName: {
     flex: 2,
     fontSize: 14,
     color: '#000',
-    paddingVertical: 8,
-    paddingLeft: 15,
+    paddingVertical: 12, // Mismo padding que header
+    textAlign: 'left',
   },
   tableCellEmail: {
     flex: 2,
     fontSize: 14,
     color: '#000',
-    paddingVertical: 8,
-    paddingLeft: 15,
+    paddingVertical: 12,
+    textAlign: 'left',
+    paddingLeft: 10,
   },
   tableCellRole: {
     flex: 1,
     fontSize: 14,
     color: '#000',
+    paddingVertical: 12,
     textAlign: 'left',
-    paddingLeft: 15,
-    paddingVertical: 8,
+    paddingLeft: 10,
   },
+  
   verticalSeparator: {
-    width: 2,              // grosor de la línea
-    backgroundColor: '#ccc', // color gris claro
-    alignSelf: 'stretch',    // 🔹 hace que cubra toda la altura de la fila
+    width: 1, // Reducido de 2 a 1 para mejor alineación
+    backgroundColor: '#ccc',
+    marginHorizontal: 5, // Espacio consistente
   },
-    actionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    marginTop: 20,
-    gap: 10,
-    backgroundColor: '#f0f0f0',
-  },
-    picker: {
+  
+  picker: {
     height: 40,
     width: 200,
     backgroundColor: '#fdfdfdff',
@@ -376,12 +393,12 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: '600',
   },
-    modifyButton: {
+  modifyButton: {
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
-    modifyContainer: {
+  modifyContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',

@@ -1,20 +1,14 @@
 import { View } from '@/components/Themed';
 import { Button, ButtonText } from '@/components/ui/button';
 
-import {
-  BellIcon,
-  Icon
-}from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { Card } from '@/components/ui/card';
-import { Heading } from '@/components/ui/heading';
 
 
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
 import { Image, ScrollView, StyleSheet } from 'react-native';
-import { P } from '@expo/html-elements';
 
 export default function dashboardAdmins() {
 
@@ -30,10 +24,26 @@ export default function dashboardAdmins() {
       router.replace('/administradores/gestion_usuarios');
   }
 
+  const handleConfiguracionParametros = () => {
+    // Redirige a configuracion de parametros
+      router.replace('/administradores/configuracion_parametros');
+  }
+
+  const handleBitacora = () => {
+    // Redirige a bitacora
+      router.replace('/administradores/bitacora');
+  }
+
+  const handleReportesInstitucionales = () => {
+    // Redirige a reportes institucionales
+      router.replace('/administradores/reportes_institucionales');
+  }
+
   const [selectedYear, setSelectedYear] = useState('2025');
-  const [selectedMonth, setSelectedMonth] = useState('09');
+  const [selectedMonth, setSelectedMonth] = useState('9');
 
   return (
+    <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
     <View style={styles.container}>
       {/* Inicio Menú principal*/}
       <View style={styles.horizontalContainer}>
@@ -51,17 +61,14 @@ export default function dashboardAdmins() {
           <Button onPress={handleGestionUsuarios} variant="solid" className="bg-white" size="md" action="primary" >
             <ButtonText className="text-black">Gestión de Usuarios</ButtonText>
           </Button>
-          <Button variant="solid" className="bg-white" size="md" action="primary">
+          <Button onPress={handleConfiguracionParametros} variant="solid" className="bg-white" size="md" action="primary">
             <ButtonText className="text-black">Configuración de Parámetros</ButtonText>
           </Button>
-          <Button variant="solid" className="bg-white" size="md" action="primary">
+          <Button onPress={handleBitacora} variant="solid" className="bg-white" size="md" action="primary">
             <ButtonText className="text-black">Bitácora</ButtonText>
           </Button>
-          <Button variant="solid" className="bg-white" size="md" action="primary">
+          <Button onPress={handleReportesInstitucionales} variant="solid" className="bg-white" size="md" action="primary">
             <ButtonText className="text-black">Reportes Institucionales</ButtonText>
-          </Button>
-          <Button variant="solid" className="bg-white" size="md" action="primary">
-            <Icon as={BellIcon} color='#000000ff' size="sm" className="mr-2" />
           </Button>
           <Button onPress={handleLogout} variant="solid" className="bg-white" size="md" action="primary">
             <ButtonText className="text-black">Cerrar Sesión</ButtonText>
@@ -75,10 +82,10 @@ export default function dashboardAdmins() {
       <Text style={styles.title}>Métricas Globales</Text>
 
       {/* 🔹 Filtros */}
-      
+
       <View style={styles.filterContainer}>
-          <ScrollView 
-          horizontal 
+          <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={true}
           contentContainerStyle={styles.horizontalContainer}
         >
@@ -253,11 +260,19 @@ export default function dashboardAdmins() {
       </View>
 
     </View>
+    </ScrollView>
   );
 }
 
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flex: 1,
+    backgroundColor: '#ffffffff',
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
   container: {
     flex: 1,
     alignItems: 'center', 
@@ -294,10 +309,10 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   filterContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    width: '21%',
+    width: '100%',
     marginVertical: 10,
     paddingHorizontal: 10,
   },
@@ -332,10 +347,6 @@ const styles = StyleSheet.create({
     padding: 15,
     backgroundColor: '#fff',
     minHeight: 600,
-  },
-  scrollContent: {
-    alignItems: 'center',
-    paddingBottom: 80,
   },
   tableContainer: {
     maxHeight: 1000, // espacio de elem mostrados sin scrollear
