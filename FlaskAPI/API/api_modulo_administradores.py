@@ -7,7 +7,8 @@ from Controladores_Tablas.controlador_etiquetas import *
 # endpoints para dashboard
 from Controladores_Tablas.controlador_solicitudes import readSolicitudes
 from Controladores_Tablas.controlador_bitacoraRecursos import readBitRecursos
-from Controladores_Tablas.controlador_recursos import readRecursos, readOneRecursos
+from Controladores_Tablas.controlador_recursos import readRecursos
+from Controladores_Tablas.controlador_usuarios import readUsuarios, readOneUsuarios, updateUsuarios
 from datetime import datetime
 import re
 
@@ -655,4 +656,132 @@ def get_recursos_mas_usados():
             
     except Exception as e:
         print(f"Error en recursos_mas_usados: {e}")
+        return "Error interno del servidor", 500
+
+#-------------------------------------
+# Tabla de Usuarios - Gestión de Usuarios
+
+# Endpoint para obtener todos los usuarios con información de roles
+@administradores_bp.route('/usuarios/read', methods=['GET'])
+def read_usuarios():
+    try:
+        # Obtener todos los usuarios
+        respuesta_usuarios = readUsuarios()
+        
+        if respuesta_usuarios != 501:
+            # Obtener todos los roles para mapear idRol a nombre
+            respuesta_roles = readRoles()
+            
+            if respuesta_roles != 501:
+                # Crear diccionario de roles para búsqueda rápida
+                roles_dict = {rol['idRol']: rol['nombre'] for rol in respuesta_roles.data}
+                
+                # Formatear respuesta con nombres de roles
+                usuarios_formateados = []
+                for usuario in respuesta_usuarios.data:
+                    rol_nombre = roles_dict.get(usuario['idRol'], 'Desconocido')
+                    usuarios_formateados.append({
+                        "idUsr": usuario['idUsr'],
+                        "nombre": usuario['nombre'],
+                        "correoInsti": usuario['correoInsti'],
+                        "telefono": usuario['telefono'],
+                        "idRol": usuario['idRol'],
+                        "rol": rol_nombre,
+                        "idDC": usuario['idDC'],
+                        "idInsti": usuario['idInsti'],
+                        "contrasena": usuario['contrasena']  # Incluir si es necesario
+                    })
+                
+                return jsonify({"data": usuarios_formateados})
+            else:
+                return "Error en la BD al leer roles", 500
+        else:
+            return "Error en la BD al leer usuarios", 500
+            
+    except Exception as e:
+        print(f"❌ Error en read_usuarios: {e}")
+        return "Error interno del servidor", 500
+
+# Endpoint para actualizar el rol de un usuario
+@administradores_bp.route('/usuarios/update_rol', methods=['POST'])
+def update_rol_usuario():
+    try:
+        # Lectura del JSON
+        entrada = request.get_json()
+        idUsr = entrada["idUsr"]
+        idRol = entrada["idRol"]
+        
+        print(f"🔄 Actualizando rol del usuario {idUsr} a {idRol}")
+        
+        # Primero obtener el usuario actual para no perder los otros datos
+        usuario_actual = readOneUsuarios(idUsr)
+        
+        if usuario_actual != 501 and usuario_actual.data:
+            usuario_data = usuario_actual.data[0]
+            
+            # Actualizar solo el rol, manteniendo los demás datos
+            respuesta = updateUsuarios(
+                pIdUsr=idUsr,
+                pIdRol=idRol,
+                pIdDc=usuario_data['idDC'],
+                pIdInsti=usuario_data['idInsti'],
+                pCorreoInsti=usuario_data['correoInsti'],
+                pNombre=usuario_data['nombre'],
+                pTelefono=usuario_data['telefono'],
+                pContrasena=usuario_data['contrasena']
+            )
+            
+            if respuesta != 501:
+                return jsonify({
+                    "success": True,
+                    "message": "Rol actualizado correctamente",
+                    "data": respuesta.data
+                })
+            else:
+                return "Error en la BD al actualizar", 500
+        else:
+            return "Usuario no encontrado", 404
+            
+    except Exception as e:
+        print(f"❌ Error en update_rol_usuario: {e}")
+        return "Error interno del servidor", 500
+
+# Endpoint para buscar usuarios por nombre
+@administradores_bp.route('/usuarios/buscar', methods=['POST'])
+def buscar_usuarios():
+    try:
+        entrada = request.get_json()
+        nombre_busqueda = entrada.get("nombre", "").lower()
+        
+        # Obtener todos los usuarios
+        respuesta_usuarios = readUsuarios()
+        respuesta_roles = readRoles()
+        
+        if respuesta_usuarios != 501 and respuesta_roles != 501:
+            # Crear diccionario de roles
+            roles_dict = {rol['idRol']: rol['nombre'] for rol in respuesta_roles.data}
+            
+            # Filtrar usuarios por nombre
+            usuarios_filtrados = []
+            for usuario in respuesta_usuarios.data:
+                if nombre_busqueda in usuario['nombre'].lower():
+                    rol_nombre = roles_dict.get(usuario['idRol'], 'Desconocido')
+                    usuarios_filtrados.append({
+                        "idUsr": usuario['idUsr'],
+                        "nombre": usuario['nombre'],
+                        "correoInsti": usuario['correoInsti'],
+                        "telefono": usuario['telefono'],
+                        "idRol": usuario['idRol'],
+                        "rol": rol_nombre,
+                        "idDC": usuario['idDC'],
+                        "idInsti": usuario['idInsti'],
+                        "contrasena": usuario['contrasena']
+                    })
+            
+            return jsonify({"data": usuarios_filtrados})
+        else:
+            return "Error en la BD", 500
+            
+    except Exception as e:
+        print(f"❌ Error en buscar_usuarios: {e}")
         return "Error interno del servidor", 500

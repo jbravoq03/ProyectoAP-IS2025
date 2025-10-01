@@ -89,6 +89,11 @@ export default function configuracionParametrosAdmins() {
   };
 
   return (
+    <ScrollView 
+        horizontal={true}
+        showsHorizontalScrollIndicator={true}
+        contentContainerStyle={styles.horizontalScrollContent}
+    >
     <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
     <View style={styles.container}>
       
@@ -277,6 +282,7 @@ export default function configuracionParametrosAdmins() {
 
     </View>
     </ScrollView>
+    </ScrollView>
   );
 }
 
@@ -294,6 +300,9 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     backgroundColor: '#ffffffff',
     padding: 20,
+  },
+  horizontalScrollContent: {
+    flexGrow: 1,
   },
   horizontalContainer: {
     backgroundColor: '#fff',

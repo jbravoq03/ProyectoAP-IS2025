@@ -2,6 +2,7 @@ import { DptoCarrera } from "@/model/dptocar";
 import { ParamGlob } from "@/model/paramGlob";
 import { Rol } from "@/model/roles";
 import { Etiqueta } from "@/model/etiqueta";
+import { usuario } from "@/model/usuarios";
 
 const API_URL = "http://localhost:5000/administradores";
 
@@ -183,5 +184,29 @@ export const getMantenimientosActivos = async (params: string = ''): Promise<any
 
 export const getRecursosMasUsados = async (params: string = ''): Promise<any> => {
   const res = await fetch(`${API_URL}/metricas/recursos_mas_usados?${params}`);
+  return res.json();
+};
+
+// -------------------- GESTIÓN DE USUARIOS --------------------
+export const readUsuarios = async (): Promise<any> => {
+  const res = await fetch(`${API_URL}/usuarios/read`);
+  return res.json();
+};
+
+export const updateRolUsuario = async (idUsr: Number, idRol: Number): Promise<any> => {
+  const res = await fetch(`${API_URL}/usuarios/update_rol`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ idUsr, idRol }),
+  });
+  return res.json();
+};
+
+export const buscarUsuarios = async (nombre: string): Promise<any> => {
+  const res = await fetch(`${API_URL}/usuarios/buscar`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nombre }),
+  });
   return res.json();
 };

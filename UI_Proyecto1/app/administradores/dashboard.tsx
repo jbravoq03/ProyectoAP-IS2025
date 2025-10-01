@@ -121,6 +121,11 @@ export default function dashboardAdmins() {
   }
 
   return (
+    <ScrollView 
+        horizontal={true}
+        showsHorizontalScrollIndicator={true}
+        contentContainerStyle={styles.horizontalScrollContent}
+    >
     <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
     <View style={styles.container}>
       {/* Inicio Menú principal*/}
@@ -298,6 +303,7 @@ export default function dashboardAdmins() {
 
     </View>
     </ScrollView>
+    </ScrollView>
   );
 }
 
@@ -308,6 +314,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffffff',
   },
   scrollContent: {
+    flexGrow: 1,
+  },
+  horizontalScrollContent: {
     flexGrow: 1,
   },
   container: {

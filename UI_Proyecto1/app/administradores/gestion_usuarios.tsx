@@ -6,9 +6,13 @@ import { Card } from '@/components/ui/card';
 import { Picker } from '@react-native-picker/picker';
 
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, TextInput, Alert, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, TextInput, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
+
+import { readUsuarios, updateRolUsuario, buscarUsuarios, readRoles } from '@/services/moduloAdmin_service';
+import { usuario } from '@/model/usuarios';
+import { Rol } from '@/model/roles';
 
 export default function gestionusuariosAdmins() {
 
@@ -20,57 +24,124 @@ export default function gestionusuariosAdmins() {
   };
 
   const [searchName, setSearchName] = useState('');
-  const [searchEmail, setSearchEmail] = useState('');
-  const [selectedRole, setSelectedRole] = useState('');
-  type User = { nombre: string; correo: string; rol: string };
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedRole, setSelectedRole] = useState<Number>(0);
+  const [selectedUser, setSelectedUser] = useState<usuario | null>(null);
+  const [users, setUsers] = useState<usuario[]>([]);
+  const [roles, setRoles] = useState<Rol[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const users: User[] = [
-    { nombre: 'Juan Pérez', correo: 'juan.perez@tec.ac.cr', rol: 'Administrador' },
-    { nombre: 'María Gómez', correo: 'maria.gomez@tec.ac.cr', rol: 'Tecnico/Encargado' },
-    { nombre: 'Carlos Rojas', correo: 'carlos.rojas@itcr.ac.cr', rol: 'Usuario' },
-    { nombre: 'Ana Rodríguez', correo: 'ana.rodriguez@itcr.ac.cr', rol: 'TTecnico/Encargado' },
-    { nombre: 'Luis Fernández', correo: 'luis.fernandez@estudiante.tec.ac.cr', rol: 'Usuario' },
-    { nombre: 'Sofía Ramírez', correo: 'sofia.ramirez@estudiante.tec.ac.cr', rol: 'Tecnico/Encargado' },
-  ];
+  // Función para obtener el nombre del rol basado en el idRol
+  const getNombreRol = (idRol: Number): string => {
+    const rol = roles.find(r => r.idRol === idRol);
+    return rol ? rol.nombre : 'Desconocido';
+  };
 
-  const handleModify = () => {
-    console.log('Botón Modificar presionado');
-    console.log('selectedUser:', selectedUser);
-    console.log('selectedRole:', selectedRole);
-    // Detecta plataforma
+  // Cargar usuarios y roles
+  const cargarDatos = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const [usuariosRes, rolesRes] = await Promise.all([
+        readUsuarios(),
+        readRoles(),
+      ]);
+
+      if (usuariosRes.data && rolesRes.data) {
+        setUsers(usuariosRes.data);
+        setRoles(rolesRes.data);
+      } else {
+        setError('Error al cargar los datos');
+      }
+    } catch (err) {
+      setError('Error de conexión');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    cargarDatos();
+  }, []);
+
+  // Buscar usuarios por nombre
+  const handleSearch = async () => {
+    try {
+      setLoading(true);
+      if (searchName.trim() === '') {
+        // Si el campo de búsqueda está vacío, recargar todos los usuarios
+        await cargarDatos();
+        return;
+      }
+
+      const resultado = await buscarUsuarios(searchName);
+      
+      if (resultado.data) {
+        setUsers(resultado.data);
+      } else {
+        setError('Error en la búsqueda');
+      }
+    } catch (err) {
+      setError('Error al buscar usuarios');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleModify = async () => {
     const isWeb = typeof window !== 'undefined' && window.document;
+    
     if (!selectedUser) {
       if (isWeb) {
         window.alert('Por favor, selecciona un usuario primero.');
       } else {
         Alert.alert('Aviso', 'Por favor, selecciona un usuario primero.');
       }
-      console.log(`Seleccione un usuario`);
+      return;
+    }
+
+    if (!selectedRole || selectedRole === 0) {
+      if (isWeb) {
+        window.alert('Por favor, selecciona un rol.');
+      } else {
+        Alert.alert('Aviso', 'Por favor, selecciona un rol.');
+      }
       return;
     }
 
     // Validación de cambio de rol según correo
-    const correo = selectedUser.correo;
+    const correo = selectedUser.correoInsti;
+
     let permitido = false;
     let mensaje = '';
-    if (correo.endsWith('@estudiante.tec.ac.cr')) {
-      if (["Usuario", "Tecnico/Encargado"].includes(selectedRole)) {
+
+    // Lógica de validación basada en el dominio del correo
+    if (correo.endsWith('@estudiante.tec.ac.cr') || correo.endsWith('@estudiantec.cr')) {
+      if (["2", "4"].includes(selectedRole.toString())) {
         permitido = true;
       } else {
-        mensaje = 'Solo puede asignar Usuario, Tecnico/Encargado a correos de estudiante.';
+        mensaje = 'Solo puede asignar Usuario o Tecnico/Encargado a correos de estudiante.';
+        console.log("Rol actual: " + selectedUser.idRol);
+        console.log("Rol a cambiar: " + selectedRole);
       }
     } else if (correo.endsWith('@itcr.ac.cr')) {
-      if (["Usuario", "Técnico", "Encargado"].includes(selectedRole)) {
+      if (["2", "4"].includes(selectedRole.toString())) {
         permitido = true;
       } else {
-        mensaje = 'Solo puede asignar Usuario, Tecnico o Encargado a correos de profesor.';
+        mensaje = 'Solo puede asignar Usuario o Tecnico/Encargado a correos de profesor.';
+        console.log("Rol actual: " + selectedUser.idRol);
+        console.log("Rol a cambiar: " + selectedRole);
       }
     } else if (correo.endsWith('@tec.ac.cr')) {
-      if (["Administrador", "Lab/Departamento", "Tecnico/Encargado"].includes(selectedRole)) {
+      if (["1", "3", "4"].includes(selectedRole.toString())) {
         permitido = true;
       } else {
         mensaje = 'Solo puede asignar Administrador, Lab/Departamento o Tecnico/Encargado a correos institucionales.';
+        console.log("Rol actual: " + selectedUser.idRol);
+        console.log("Rol a cambiar: " + selectedRole);
       }
     } else {
       mensaje = 'Dominio de correo no reconocido para cambio de rol.';
@@ -86,21 +157,53 @@ export default function gestionusuariosAdmins() {
     }
 
     // Confirmación y cambio de rol
+    const confirmMessage = `¿Deseas cambiar el rol de ${selectedUser.nombre} a ${getNombreRol(Number(selectedRole))}?`;
+    
     if (isWeb) {
-      const confirm = window.confirm(`¿Deseas cambiar el rol de ${selectedUser.nombre} a ${selectedRole}?`);
+      const confirm = window.confirm(confirmMessage);
       if (confirm) {
-        console.log(`Rol actualizado: ${selectedUser.nombre} → ${selectedRole}`);
+        try {
+          const resultado = await updateRolUsuario(selectedUser.idUsr, selectedRole);
+          
+          if (resultado.success) {
+            window.alert('Rol actualizado correctamente.');
+            // Recargar la lista de usuarios
+            await cargarDatos();
+            // Limpiar selección
+            setSelectedUser(null);
+            setSelectedRole(0);
+          } else {
+            window.alert('Error al actualizar el rol.');
+          }
+        } catch (error) {
+          window.alert('Error al actualizar el rol.');
+        }
       }
     } else {
       Alert.alert(
         'Confirmar cambio',
-        `¿Deseas cambiar el rol de ${selectedUser.nombre} a ${selectedRole}?`,
+        confirmMessage,
         [
           { text: 'Cancelar', style: 'cancel' },
           {
             text: 'Confirmar',
-            onPress: () => {
-              console.log(`Rol actualizado: ${selectedUser.nombre} → ${selectedRole}`);
+            onPress: async () => {
+              try {
+                const resultado = await updateRolUsuario(selectedUser.idUsr, selectedRole);
+                
+                if (resultado.success) {
+                  Alert.alert('Éxito', 'Rol actualizado correctamente.');
+                  // Recargar la lista de usuarios
+                  await cargarDatos();
+                  // Limpiar selección
+                  setSelectedUser(null);
+                  setSelectedRole(0);
+                } else {
+                  Alert.alert('Error', 'Error al actualizar el rol.');
+                }
+              } catch (error) {
+                Alert.alert('Error', 'Error al actualizar el rol.');
+              }
             },
           },
         ]
@@ -108,7 +211,32 @@ export default function gestionusuariosAdmins() {
     }
   };
 
+  if (loading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text style={styles.loadingText}>Cargando usuarios...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+        <Button onPress={cargarDatos} variant="solid" size="sm">
+          <ButtonText>Reintentar</ButtonText>
+        </Button>
+      </View>
+    );
+  }
+
   return (
+    <ScrollView 
+        horizontal={true}
+        showsHorizontalScrollIndicator={true}
+        contentContainerStyle={styles.horizontalScrollContent}
+    >
     <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
     <View style={styles.container}>
       {/* Inicio Menú principal*/}
@@ -143,7 +271,8 @@ export default function gestionusuariosAdmins() {
             value={searchName}
             onChangeText={setSearchName}
           />
-          <Button 
+          <Button
+            onPress={handleSearch}
             variant="solid" 
             size="sm" 
             action="primary" 
@@ -183,20 +312,19 @@ export default function gestionusuariosAdmins() {
                     key={i}
                     style={[
                     styles.tableRow,
-                    selectedUser?.correo === u.correo && { backgroundColor: '#d0e6ff' }, // resaltado
+                    selectedUser?.correoInsti === u.correoInsti && { backgroundColor: '#d0e6ff' }, // resaltado
                     ]}
                     onPress={() => {
-                    setSelectedUser(u);
-                    setSearchEmail(u.correo);
-                    setSelectedRole(u.rol);
+                      setSelectedUser(u);
+                      setSelectedRole(Number(u.idRol));
                     }}
                     activeOpacity={0.7} // le da feedback visual
                 >
                     <Text style={styles.tableCellName}>{u.nombre}</Text>
                     <View style={styles.verticalSeparator} />
-                    <Text style={styles.tableCellEmail}>{u.correo}</Text>
+                    <Text style={styles.tableCellEmail}>{u.correoInsti}</Text>
                     <View style={styles.verticalSeparator} />
-                    <Text style={styles.tableCellRole}>{u.rol}</Text>
+                    <Text style={styles.tableCellRole}>{getNombreRol(u.idRol)}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -209,10 +337,10 @@ export default function gestionusuariosAdmins() {
                 dropdownIconColor="#000"
                 onValueChange={(itemValue) => setSelectedRole(itemValue)}
                 >
-                <Picker.Item label="Administrador" value="Administrador" />
-                <Picker.Item label="Usuario" value="Usuario" />
-                <Picker.Item label="Lab/Departamento" value="Lab/Departamento" />
-                <Picker.Item label="Tecnico/Encargado" value="Tecnico/Encargado" />
+                <Picker.Item label="Seleccione un rol" value={0} />
+                  {roles.map((rol) => (
+                    <Picker.Item label={rol.nombre} value={rol.idRol} />
+                  ))}
                 </Picker>
 
                 <Button
@@ -234,6 +362,7 @@ export default function gestionusuariosAdmins() {
 
     </View>
     </ScrollView>
+    </ScrollView>
   );
 }
 
@@ -252,6 +381,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffffff',
     padding: 20,
   },
+  horizontalScrollContent: {
+    flexGrow: 1,
+  },
   horizontalContainer: {
     backgroundColor: '#fff',
     flexDirection: 'row',
@@ -259,6 +391,24 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     gap: 8,
     paddingVertical: 10,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffffff',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#666',
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 10,
+    textAlign: 'center',
+    fontSize: 16,
   },
   title: {
     fontSize: 22,
