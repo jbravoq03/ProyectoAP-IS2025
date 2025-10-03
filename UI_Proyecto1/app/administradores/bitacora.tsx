@@ -6,9 +6,11 @@ import { Card } from '@/components/ui/card';
 import { Picker } from '@react-native-picker/picker';
 
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Alert } from 'react-native';
+import { ScrollView, StyleSheet, Alert, ActivityIndicator, TextInput } from 'react-native';
+
+import { readBitacoraAcciones, buscarBitacora } from '@/services/moduloAdmin_service';
 
 export default function bitacoraAdmins() {
 
@@ -19,37 +21,127 @@ export default function bitacoraAdmins() {
       router.replace('/administradores/dashboard');
   };
 
-  const handleFiltrar = () => {
-    Alert.alert('Funcionalidad de filtrado no implementada aún.');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [bitacoras, setBitacoras] = useState<any[]>([]);
+
+  const [searchUsuario, setSearchUsuario] = useState('');
+  const [searchModulo, setSearchModulo] = useState('Todos');
+  const [searchAccion, setSearchAccion] = useState('Todas');
+
+  const [selectedFechaDia, setSelectedFechaDia] = useState('');
+  const [selectedFechaMes, setSelectedFechaMes] = useState('');
+  const [selectedFecha365Dias, setSelectedFecha365Dias] = useState('');
+
+   // Cargar bitácoras (sin filtros)
+  const cargarBitacoras = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const respuesta = await readBitacoraAcciones();
+      
+      if (respuesta.data) {
+        setBitacoras(respuesta.data);
+      } else {
+        setError('Error al cargar las bitácoras');
+      }
+    } catch (err) {
+      setError('Error de conexión al cargar bitácoras');
+      console.error('Error cargando bitácoras:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const [searchUsuario, setSearchUsuario] = useState('Todos');
-  const [searchModulo, setSearchModulo] = useState('Todos');
-  const [selectedAccion, setSelectedAccion] = useState('Todas');
+  useEffect(() => {
+    cargarBitacoras();
+  }, []);
 
-  const [selectedFechaDia, setSelectedFechaDia] = useState('29');
-  const [selectedFechaMes, setSelectedFechaMes] = useState('9');
-  const [selectedFecha365Dias, setSelectedFecha365Dias] = useState('2025');
+  // Aplicar filtros
+  const handleFiltrar = async () => {
+    try {
+      setLoading(true);
+      
+      // Preparar filtros
+      const filtros: any = {};
 
-  type Log = { usuario: string; modulo: string; fecha: string; accion: string; };
+      if (searchUsuario.trim() !== '') {
+        filtros.usuario = searchUsuario.trim();
+      }
+      
+      if (searchAccion !== 'Todas') {
+        filtros.accion = searchAccion;
+      }
+      
+      if (searchModulo !== 'Todos') {
+        filtros.modulo = searchModulo;
+      }
+      
+      // 🔹 FILTROS DE FECHA AHORA SON INDIVIDUALES Y OPCIONALES
+      if (selectedFecha365Dias) {
+        filtros.a365dias = selectedFecha365Dias;
+      }
+      
+      if (selectedFechaMes) {
+        filtros.mes = selectedFechaMes;
+      }
+      
+      if (selectedFechaDia) {
+        filtros.dia = selectedFechaDia;
+      }
+      
+      console.log('🔍 Aplicando filtros:', filtros);
+      
+      const respuesta = await buscarBitacora(filtros);
+      
+      if (respuesta.data) {
+        setBitacoras(respuesta.data);
+      } else {
+        Alert.alert('Error', 'No se pudieron aplicar los filtros');
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Error al aplicar filtros');
+      console.error('Error aplicando filtros:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const logs: Log[] = [
-    { usuario: 'Juan Pérez', modulo: 'Reservas', fecha: '2025-09-25', accion: 'Creó una reserva' },
-    { usuario: 'María Gómez', modulo: 'Usuarios', fecha: '2025-09-24', accion: 'Modificó un perfil' },
-    { usuario: 'Carlos Rojas', modulo: 'Inventario', fecha: '2025-09-23', accion: 'Eliminó un recurso' },
-    { usuario: 'Ana Martínez', modulo: 'Reportes', fecha: '2025-09-22', accion: 'Generó un reporte' },
-    { usuario: 'Luis Fernández', modulo: 'Mantenimiento', fecha: '2025-09-21', accion: 'Actualizó estado de mantenimiento' },
-    { usuario: 'Sofía López', modulo: 'Configuración', fecha: '2025-09-20', accion: 'Cambió parámetros del sistema' },
-    { usuario: 'Miguel Torres', modulo: 'Notificaciones', fecha: '2025-09-19', accion: 'Envié una notificación' },
-    { usuario: 'Laura Sánchez', modulo: 'Seguridad', fecha: '2025-09-18', accion: 'Actualizó permisos de usuario' },
-    { usuario: 'Diego Ramírez', modulo: 'Auditoría', fecha: '2025-09-17', accion: 'Revisó logs del sistema' },
-    { usuario: 'Elena Cruz', modulo: 'Soporte', fecha: '2025-09-16', accion: 'Atendió un ticket de soporte' },
-  ];
+  // Limpiar filtros y mostrar todo
+  const handleLimpiarFiltros = async () => {
+    setSearchUsuario('');
+    setSearchAccion('Todas');
+    setSearchModulo('Todos');
+    setSelectedFechaDia('');
+    setSelectedFechaMes('');
+    setSelectedFecha365Dias('');
+    await cargarBitacoras(); // Vuelve a cargar todo sin filtros
+  };
 
   /* Para los filtros */
-  const usuariosUnicos = [...new Set(logs.map(l => l.usuario))];
-  const modulosUnicos = [...new Set(logs.map(l => l.modulo))];
-  const accionesUnicas = [...new Set(logs.map(l => l.accion))];
+  const usuariosUnicos = ['Todos', ...new Set(bitacoras.map(b => b.usuario))];
+  const accionesUnicas = ['Todas', ...new Set(bitacoras.map(b => b.accion))];
+  const modulosUnicos = ['Todos', ...new Set(bitacoras.map(b => b.modulo))];
+
+  if (loading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text style={styles.loadingText}>Cargando bitácoras...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+        <Button onPress={cargarBitacoras} variant="solid" size="sm">
+          <ButtonText>Reintentar</ButtonText>
+        </Button>
+      </View>
+    );
+  }
 
   return (
     <ScrollView 
@@ -98,25 +190,36 @@ export default function bitacoraAdmins() {
               <Text style={styles.headerCellModule}>Módulo</Text>
               {/* Separador vertical */}
               <View style={[styles.verticalSeparator]} />
+              <Text style={styles.headerCellAction}>Acción</Text>
+              {/* Separador vertical */}
+              <View style={[styles.verticalSeparator]} />
               <Text style={styles.headerCellDate}>Fecha</Text>
               {/* Separador vertical */}
               <View style={[styles.verticalSeparator]} />
-              <Text style={styles.headerCellAction}>Acción</Text>
+              <Text style={styles.headerCellDescripcion}>Descripción</Text>
             </View>
 
             {/* Contenido tabla */}
             <ScrollView style={styles.tableContainer}>
-              {logs.map((log, i) => (
-                <View key={i} style={styles.tableRow}>
-                    <Text style={styles.tableCellUser}>{log.usuario}</Text>
-                    <View style={styles.verticalSeparator} />
-                    <Text style={styles.tableCellModule}>{log.modulo}</Text>
-                    <View style={styles.verticalSeparator} />
-                    <Text style={styles.tableCellDate}>{log.fecha}</Text>
-                    <View style={styles.verticalSeparator} />
-                    <Text style={styles.tableCellAction}>{log.accion}</Text>
+              {bitacoras.length > 0 ? (
+                bitacoras.map((bitacora, i) => (
+                  <View key={i} style={styles.tableRow}>
+                      <Text style={styles.tableCellUser}>{bitacora.usuario}</Text>
+                      <View style={styles.verticalSeparator} />
+                      <Text style={styles.tableCellModule}>{bitacora.modulo}</Text>
+                      <View style={styles.verticalSeparator} />
+                      <Text style={styles.tableCellAction}>{bitacora.accion}</Text>
+                      <View style={styles.verticalSeparator} />
+                      <Text style={styles.tableCellDate}>{bitacora.fecha}</Text>
+                      <View style={styles.verticalSeparator} />
+                      <Text style={styles.tableCellDescripcion}>{bitacora.descripcion}</Text>
+                  </View>
+                ))
+              ) : (
+                <View style={styles.tableRow}>
+                  <Text style={styles.noDataText}>No hay registros en la bitácora</Text>
                 </View>
-              ))}
+              )}
             </ScrollView>
 
           </Card>
@@ -129,20 +232,16 @@ export default function bitacoraAdmins() {
         <Text style={styles.filterTitle}>Filtros</Text>
             <View style={{...styles.filterContainer, width: 350, height: 550, backgroundColor: 'transparent', marginTop: -10 }}>
             
-                <Text style={{...styles.filterTitle, flexDirection: 'column' }}>Usuario</Text>
-                <View style={{...styles.modifyContainer, paddingVertical: 15, flexDirection: 'column' }}>
-                    <Picker
-                    selectedValue={searchUsuario}
-                    style={styles.picker}
-                    dropdownIconColor="#000"
-                    onValueChange={(itemValue) => setSearchUsuario(itemValue)}
-                    >
-                    <Picker.Item label="Todos" value="" />
-                    {usuariosUnicos.map((u) => (
-                        <Picker.Item key={u} label={u} value={u} />
-                    ))}
-                    </Picker>
-                </View>
+                <Text style={{...styles.filterTitle, flexDirection: 'column', marginTop: 25 }}>Usuario</Text>
+                <View style={{...styles.modifyContainer, paddingVertical: 15, flexDirection: 'row', gap: 8, width: '97%', marginLeft: 10 }}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Buscar usuario por nombre"
+                  placeholderTextColor="#777"
+                  value={searchUsuario}
+                  onChangeText={setSearchUsuario}
+                />
+              </View>
 
                 <Text style={{...styles.filterTitle, flexDirection: 'column', marginTop: 10 }}>Módulo</Text>
                 <View style={{...styles.modifyContainer, paddingVertical: 15, flexDirection: 'column' }}>
@@ -152,7 +251,6 @@ export default function bitacoraAdmins() {
                     dropdownIconColor="#000"
                     onValueChange={(itemValue) => setSearchModulo(itemValue)}
                     >
-                    <Picker.Item label="Todos" value="Todos" />
                     {modulosUnicos.map((m) => (
                         <Picker.Item key={m} label={m} value={m} />
                     ))}
@@ -162,12 +260,11 @@ export default function bitacoraAdmins() {
                 <Text style={{...styles.filterTitle, flexDirection: 'column', marginTop: 10 }}>Acción</Text>
                 <View style={{...styles.modifyContainer, paddingVertical: 15, flexDirection: 'column' }}>
                     <Picker
-                    selectedValue={selectedAccion}
+                    selectedValue={searchAccion}
                     style={styles.picker}
                     dropdownIconColor="#000"
-                    onValueChange={(itemValue) => setSelectedAccion(itemValue)}
+                    onValueChange={(itemValue) => setSearchAccion(itemValue)}
                     >
-                    <Picker.Item label="Todas" value="Todas" />
                     {accionesUnicas.map((a) => (
                         <Picker.Item key={a} label={a} value={a} />
                     ))}
@@ -188,6 +285,7 @@ export default function bitacoraAdmins() {
                         style={{...styles.picker, marginRight: 9, width: 70}}
                         onValueChange={(itemValue) => setSelectedFechaDia(itemValue)}
                         >
+                        <Picker.Item label="Día" value="" />
                         {Array.from({ length: 31 }, (_, i) => i + 1).map((h) => (
                                 <Picker.Item key={h} label={`${h}`} value={h} />
                             ))}
@@ -198,6 +296,7 @@ export default function bitacoraAdmins() {
                         style={{...styles.picker, marginRight: 9, width: 135}}
                         onValueChange={(itemValue) => setSelectedFechaMes(itemValue)}
                         >
+                        <Picker.Item label="Mes" value="" />
                         <Picker.Item label="Enero" value="1" />
                         <Picker.Item label="Febrero" value="2" />
                         <Picker.Item label="Marzo" value="3" />
@@ -217,6 +316,7 @@ export default function bitacoraAdmins() {
                         style={{...styles.picker, width: 85}}
                         onValueChange={(itemValue) => setSelectedFecha365Dias(itemValue)}
                         >
+                        <Picker.Item label="Año" value="" />
                         <Picker.Item label="2025" value="2025" />
                         <Picker.Item label="2024" value="2024" />
                         <Picker.Item label="2023" value="2023" />
@@ -246,6 +346,15 @@ export default function bitacoraAdmins() {
                     style={{...styles.searchButton, marginTop: 20, backgroundColor: '#288bdbff' }}
                 >
                 <ButtonText className="text-white" style={{ color: '#fff' }}>Filtrar</ButtonText>
+                </Button>
+
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onPress={handleLimpiarFiltros}
+                  style={{...styles.clearButton, marginTop: 20, backgroundColor: '#434b52ff', borderColor: '#787879ff' }}
+                >
+                  <ButtonText className="text-black" style={{ color: '#fff' }}>Limpiar</ButtonText>
                 </Button>
             </View>
         </Card>
@@ -317,6 +426,10 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
   },
+  clearButton: {
+    height: 40,
+    justifyContent: 'center',
+  },
   card: {
     width: 1000,
     padding: 15,
@@ -327,6 +440,35 @@ const styles = StyleSheet.create({
   tableContainer: {
     maxHeight: 1000, // espacio de elem mostrados sin scrollear
     width: '100%',
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffffff',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#666',
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 10,
+    textAlign: 'center',
+    fontSize: 16,
+  },
+  input: {
+    flex: 1,
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    color: '#000',
+    fontWeight: '500',
+    backgroundColor: '#fff',
   },
 
   // 🔹 ESTILOS DE TABLA MEJORADOS
@@ -344,6 +486,13 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
     paddingHorizontal: 10, // Mismo padding que el header
     backgroundColor: '#ffffffff',
+  },
+  noDataText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    flex: 1,
+    paddingVertical: 20,
   },
   
   // 🔹 CELDAS DEL HEADER - MISMOS FLEX QUE LAS CELDAS NORMALES
@@ -382,6 +531,15 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     paddingLeft: 10,
   },
+  headerCellDescripcion: {
+    flex: 2, // Reducido de 3 a 2
+    fontWeight: 'bold',
+    fontSize: 16,
+    color: '#000',
+    paddingVertical: 12,
+    textAlign: 'left',
+    paddingLeft: 10,
+  },
   
   // 🔹 CELDAS NORMALES
   tableCellUser: {
@@ -409,6 +567,14 @@ const styles = StyleSheet.create({
   },
   tableCellAction: {
     flex: 1,
+    fontSize: 14,
+    color: '#000',
+    paddingVertical: 12,
+    textAlign: 'left',
+    paddingLeft: 10,
+  },
+  tableCellDescripcion: {
+    flex: 2, // Reducido de 3 a 2
     fontSize: 14,
     color: '#000',
     paddingVertical: 12,

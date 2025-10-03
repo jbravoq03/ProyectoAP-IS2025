@@ -9,6 +9,9 @@ from Controladores_Tablas.controlador_solicitudes import readSolicitudes
 from Controladores_Tablas.controlador_bitacoraRecursos import readBitRecursos
 from Controladores_Tablas.controlador_recursos import readRecursos
 from Controladores_Tablas.controlador_usuarios import readUsuarios, readOneUsuarios, updateUsuarios
+from Controladores_Tablas.controlador_bitacoraAcciones import readBitAcciones
+from Controladores_Tablas.controlador_laboratorios import readLaboratorio
+from Controladores_Tablas.controlador_material import readMaterial
 from datetime import datetime
 import re
 
@@ -621,7 +624,7 @@ def get_recursos_mas_usados():
                             if fecha_obj.year == year and fecha_obj.month == month:
                                 salidas_filtradas.append(salida)
                         except Exception as e:
-                            print(f"⚠️ Error parseando fecha {fecha_bitacora}: {e}")
+                            print(f"Error parseando fecha {fecha_bitacora}: {e}")
                             continue
                 salidas = salidas_filtradas
             
@@ -699,7 +702,7 @@ def read_usuarios():
             return "Error en la BD al leer usuarios", 500
             
     except Exception as e:
-        print(f"❌ Error en read_usuarios: {e}")
+        print(f"Error en read_usuarios: {e}")
         return "Error interno del servidor", 500
 
 # Endpoint para actualizar el rol de un usuario
@@ -711,7 +714,7 @@ def update_rol_usuario():
         idUsr = entrada["idUsr"]
         idRol = entrada["idRol"]
         
-        print(f"🔄 Actualizando rol del usuario {idUsr} a {idRol}")
+        print(f"Actualizando rol del usuario {idUsr} a {idRol}")
         
         # Primero obtener el usuario actual para no perder los otros datos
         usuario_actual = readOneUsuarios(idUsr)
@@ -743,7 +746,7 @@ def update_rol_usuario():
             return "Usuario no encontrado", 404
             
     except Exception as e:
-        print(f"❌ Error en update_rol_usuario: {e}")
+        print(f"Error en update_rol_usuario: {e}")
         return "Error interno del servidor", 500
 
 # Endpoint para buscar usuarios por nombre
@@ -783,5 +786,691 @@ def buscar_usuarios():
             return "Error en la BD", 500
             
     except Exception as e:
-        print(f"❌ Error en buscar_usuarios: {e}")
+        print(f"Error en buscar_usuarios: {e}")
         return "Error interno del servidor", 500
+
+#-------------------------------------
+# Tabla de Bitácora de Acciones - Gestión de Bitácora
+
+# Función para inferir el módulo basado en la acción o descripción
+def inferir_modulo(accion, descripcion):
+    accion_lower = accion.lower() if accion else ""
+    descripcion_lower = descripcion.lower() if descripcion else ""
+    
+    # Mapeo de palabras clave a módulos
+    if any(palabra in accion_lower or palabra in descripcion_lower 
+           for palabra in ['reserva', 'solicitud', 'lab']):
+        return "Reservas"
+    elif any(palabra in accion_lower or palabra in descripcion_lower 
+             for palabra in ['usuario', 'rol', 'perfil']):
+        return "Usuarios"
+    elif any(palabra in accion_lower or palabra in descripcion_lower 
+             for palabra in ['recurso', 'material', 'inventario']):
+        return "Recursos"
+    elif any(palabra in accion_lower or palabra in descripcion_lower 
+             for palabra in ['mantenimiento', 'reparacion']):
+        return "Mantenimiento"
+    elif any(palabra in accion_lower or palabra in descripcion_lower 
+             for palabra in ['configuracion', 'parametro']):
+        return "Configuración"
+    elif any(palabra in accion_lower or palabra in descripcion_lower 
+             for palabra in ['reporte', 'estadistica', 'metric']):
+        return "Reportes"
+    else:
+        return "Sistema"
+
+# Endpoint para obtener toda la bitácora de acciones
+@administradores_bp.route('/bitacora/read', methods=['GET'])
+def read_bitacora():
+    try:
+        # Obtener todas las bitácoras
+        respuesta_bitacora = readBitAcciones()
+        
+        if respuesta_bitacora != 501:
+            # Obtener todos los usuarios para mapear idUsuario a nombre
+            respuesta_usuarios = readUsuarios()
+            
+            if respuesta_usuarios != 501:
+                # Crear diccionario de usuarios para búsqueda rápida
+                usuarios_dict = {usuario['idUsr']: usuario['nombre'] for usuario in respuesta_usuarios.data}
+                
+                # Formatear respuesta con nombres de usuarios
+                bitacoras_formateadas = []
+                for bitacora in respuesta_bitacora.data:
+                    nombre_usuario = usuarios_dict.get(bitacora['idUsuario'], 'Usuario Desconocido')
+                    
+                    # Formatear fecha
+                    fecha_bitacora = bitacora.get('fecha', '')
+                    if 'T' in fecha_bitacora:
+                        fecha_formateada = fecha_bitacora.split('T')[0]
+                    else:
+                        fecha_formateada = fecha_bitacora
+                    
+                    # Inferir módulo
+                    modulo = inferir_modulo(bitacora.get('accion'), bitacora.get('descripcion'))
+                    
+                    bitacoras_formateadas.append({
+                        "idBitac": bitacora['idBitac'],
+                        "usuario": nombre_usuario,
+                        "accion": bitacora['accion'],
+                        "descripcion": bitacora['descripcion'],
+                        "fecha": fecha_formateada,
+                        "modulo": modulo,
+                        "idUsuario": bitacora['idUsuario']
+                    })
+                
+                return jsonify({"data": bitacoras_formateadas})
+            else:
+                return "Error en la BD al leer usuarios", 500
+        else:
+            return "Error en la BD al leer bitácora", 500
+            
+    except Exception as e:
+        print(f"Error en read_bitacora: {e}")
+        return "Error interno del servidor", 500
+
+# Endpoint para buscar/filtrar bitácora
+@administradores_bp.route('/bitacora/buscar', methods=['GET'])
+def buscar_bitacora():
+    try:
+        # Obtener parámetros de filtro
+        usuario_filtro = request.args.get('usuario', type=str)
+        accion_filtro = request.args.get('accion', type=str)
+        modulo_filtro = request.args.get('modulo', type=str)
+        a365dias_filtro = request.args.get('anio', type=str)  # Cambiado de fecha a componentes separados
+        mes_filtro = request.args.get('mes', type=str)
+        dia_filtro = request.args.get('dia', type=str)
+
+        print(f"Filtros aplicados - Usuario: {usuario_filtro}, Acción: {accion_filtro}, Módulo: {modulo_filtro}, Año: {a365dias_filtro}, Mes: {mes_filtro}, Día: {dia_filtro}")
+
+        # Obtener todas las bitácoras
+        respuesta_bitacora = readBitAcciones()
+        
+        if respuesta_bitacora != 501:
+            # Obtener todos los usuarios
+            respuesta_usuarios = readUsuarios()
+            
+            if respuesta_usuarios != 501:
+                usuarios_dict = {usuario['idUsr']: usuario['nombre'] for usuario in respuesta_usuarios.data}
+                
+                # Aplicar filtros
+                bitacoras_filtradas = []
+                
+                for bitacora in respuesta_bitacora.data:
+                    nombre_usuario = usuarios_dict.get(bitacora['idUsuario'], 'Usuario Desconocido')
+                    
+                    # Inferir módulo
+                    modulo = inferir_modulo(bitacora.get('accion'), bitacora.get('descripcion'))
+                    
+                    # Filtro por usuario
+                    if usuario_filtro and usuario_filtro != "":
+                        if usuario_filtro.lower() not in nombre_usuario.lower():
+                            continue
+                    
+                    # Filtro por acción
+                    if accion_filtro and accion_filtro != "Todas":
+                        if accion_filtro.lower() not in bitacora['accion'].lower():
+                            continue
+                    
+                    # Filtro por módulo
+                    if modulo_filtro and modulo_filtro != "Todos":
+                        if modulo_filtro != modulo:
+                            continue
+                    
+                    # Filtro por fecha - AHORA ES OPCIONAL POR COMPONENTES
+                    fecha_bitacora = bitacora.get('fecha', '')
+                    if fecha_bitacora:
+                        try:
+                            # Convertir fecha de string a objeto datetime para comparación
+                            if 'T' in fecha_bitacora:
+                                fecha_obj = datetime.strptime(fecha_bitacora.split('T')[0], '%Y-%m-%d')
+                            else:
+                                fecha_obj = datetime.strptime(fecha_bitacora, '%Y-%m-%d')
+                            
+                            # Aplicar filtros de fecha individualmente
+                            if a365dias_filtro:
+                                if fecha_obj.year != int(a365dias_filtro):
+                                    continue
+                            
+                            if mes_filtro:
+                                if fecha_obj.month != int(mes_filtro):
+                                    continue
+                            
+                            if dia_filtro:
+                                if fecha_obj.day != int(dia_filtro):
+                                    continue
+                                    
+                        except Exception as e:
+                            print(f"Error parseando fecha {fecha_bitacora}: {e}")
+                            # Si hay error parseando la fecha, incluir el registro por seguridad
+                            pass
+                    
+                    # Formatear fecha para mostrar
+                    if 'T' in fecha_bitacora:
+                        fecha_formateada = fecha_bitacora.split('T')[0]
+                    else:
+                        fecha_formateada = fecha_bitacora
+                    
+                    bitacoras_filtradas.append({
+                        "idBitac": bitacora['idBitac'],
+                        "usuario": nombre_usuario,
+                        "accion": bitacora['accion'],
+                        "descripcion": bitacora['descripcion'],
+                        "fecha": fecha_formateada,
+                        "modulo": modulo,
+                        "idUsuario": bitacora['idUsuario']
+                    })
+                
+                print(f"Bitácoras encontradas: {len(bitacoras_filtradas)}")
+                return jsonify({"data": bitacoras_filtradas})
+            else:
+                return "Error en la BD al leer usuarios", 500
+        else:
+            return "Error en la BD al leer bitácora", 500
+            
+    except Exception as e:
+        print(f"Error en buscar_bitacora: {e}")
+        return "Error interno del servidor", 500
+
+#-------------------------------------
+# Tabla de Reportes Intitucionales - Gestión de Reportes
+
+# Endpoint para Reporte de Uso Global
+@administradores_bp.route('/reportes/uso_global', methods=['GET'])
+def get_reporte_uso_global():
+    try:
+        # Obtener parámetros de filtro
+        tipo_recurso_filtro = request.args.get('tipo_recurso', type=str)
+        laboratorio_filtro = request.args.get('laboratorio', type=str)
+        a365dias_filtro = request.args.get('a365dias', type=int)
+        mes_filtro = request.args.get('mes', type=int)
+        dia_filtro = request.args.get('dia', type=int)
+
+        print(f"Reporte Uso Global - Filtros: tipo_recurso={tipo_recurso_filtro}, laboratorio={laboratorio_filtro}, a365dias={a365dias_filtro}, mes={mes_filtro}, día={dia_filtro}")
+
+        # Obtener datos de bitácora de recursos y recursos
+        respuesta_bitacora = readBitRecursos()
+        respuesta_recursos = readRecursos()
+        respuesta_laboratorios = readLaboratorio()
+        
+        if respuesta_bitacora != 501 and respuesta_recursos != 501 and respuesta_laboratorios != 501:
+            # Crear diccionarios para búsqueda rápida
+            recursos_dict = {r['idRec']: r for r in respuesta_recursos.data}
+            laboratorios_dict = {l['idLab']: l for l in respuesta_laboratorios.data}
+            
+            # Filtrar solo salidas (usos de recursos)
+            salidas = [s for s in respuesta_bitacora.data if s.get('accion') == 'Salida']
+            
+            # Aplicar filtros de fecha
+            salidas_filtradas = []
+            for salida in salidas:
+                fecha_bitacora = salida.get('fecha')
+                if fecha_bitacora:
+                    try:
+                        if 'T' in fecha_bitacora:
+                            fecha_obj = datetime.strptime(fecha_bitacora.split('T')[0], '%Y-%m-%d')
+                        else:
+                            fecha_obj = datetime.strptime(fecha_bitacora, '%Y-%m-%d')
+                        
+                        # Filtro por año
+                        if a365dias_filtro and fecha_obj.year != a365dias_filtro:
+                            continue
+                        
+                        # Filtro por mes
+                        if mes_filtro and fecha_obj.month != mes_filtro:
+                            continue
+                        
+                        # Filtro por día
+                        if dia_filtro and fecha_obj.day != dia_filtro:
+                            continue
+                            
+                    except Exception as e:
+                        print(f"Error parseando fecha {fecha_bitacora}: {e}")
+                        continue
+                
+                salidas_filtradas.append(salida)
+            
+            # Contar usos por recurso
+            usos_por_recurso = {}
+            for salida in salidas_filtradas:
+                id_recurso = salida.get('idRecurso')
+                if id_recurso and id_recurso in recursos_dict:
+                    recurso = recursos_dict[id_recurso]
+                    
+                    # Filtro por tipo de recurso
+                    if tipo_recurso_filtro and tipo_recurso_filtro != "Todos":
+                        if recurso.get('tipo') != tipo_recurso_filtro:
+                            continue
+                    
+                    # Filtro por laboratorio
+                    if laboratorio_filtro and laboratorio_filtro != "Todos":
+                        id_lab = recurso.get('idLab')
+                        if id_lab in laboratorios_dict:
+                            lab_nombre = laboratorios_dict[id_lab].get('nombre', '')
+                            if laboratorio_filtro not in lab_nombre:
+                                continue
+                    
+                    nombre_recurso = recurso.get('nombre', f'Recurso {id_recurso}')
+                    usos_por_recurso[nombre_recurso] = usos_por_recurso.get(nombre_recurso, 0) + 1
+            
+            # Formatear respuesta
+            data = [{"servicio": servicio, "cantidad": cantidad} 
+                   for servicio, cantidad in usos_por_recurso.items()]
+            
+            print(f"Datos Uso Global: {len(data)} servicios")
+            return jsonify({"data": data})
+        else:
+            return "Error en la BD", 500
+            
+    except Exception as e:
+        print(f"Error en reporte_uso_global: {e}")
+        return "Error interno del servidor", 500
+
+# Endpoint para Reporte de Consumo de Materiales
+@administradores_bp.route('/reportes/consumo_materiales', methods=['GET'])
+def get_reporte_consumo_materiales():
+    try:
+        # Obtener parámetros de filtro
+        tipo_recurso_filtro = request.args.get('tipo_recurso', type=str)
+        laboratorio_filtro = request.args.get('laboratorio', type=str)
+        a365dias_filtro = request.args.get('a365dias', type=int)
+        mes_filtro = request.args.get('mes', type=int)
+        dia_filtro = request.args.get('dia', type=int)
+
+        print(f"Reporte Consumo Materiales - Filtros: tipo_recurso={tipo_recurso_filtro}, laboratorio={laboratorio_filtro}, a365dias={a365dias_filtro}, mes={mes_filtro}, día={dia_filtro}")
+
+        # Obtener datos de material y bitácora
+        respuesta_material = readMaterial()
+        respuesta_bitacora = readBitRecursos()
+        respuesta_recursos = readRecursos()
+        respuesta_laboratorios = readLaboratorio()
+        
+        # Verificar que todas las respuestas sean exitosas
+        if any(resp == 501 for resp in [respuesta_material, respuesta_bitacora, respuesta_recursos, respuesta_laboratorios]):
+            print("Error en una de las consultas a la BD")
+            return jsonify({"data": []})  # Retornar array vacío en caso de error
+
+        # Crear diccionarios para búsqueda rápida
+        recursos_dict = {r['idRec']: r for r in respuesta_recursos.data}
+        laboratorios_dict = {l['idLab']: l for l in respuesta_laboratorios.data}
+        material_dict = {m['idRec']: m for m in respuesta_material.data}
+        
+        print(f"Datos cargados - Recursos: {len(recursos_dict)}, Laboratorios: {len(laboratorios_dict)}, Materiales: {len(material_dict)}, Bitácora: {len(respuesta_bitacora.data)}")
+        
+        # Filtrar salidas de material - NO filtrar por tipo en la carga inicial
+        salidas_material = []
+        for salida in respuesta_bitacora.data:
+            if salida.get('accion') == 'Salida':
+                id_recurso = salida.get('idRecurso')
+                
+                # Verificar si el recurso existe y es un material
+                if id_recurso and id_recurso in recursos_dict and id_recurso in material_dict:
+                    recurso = recursos_dict[id_recurso]
+                    
+                    # DEBUG: Mostrar información del recurso
+                    print(f"🔍 Recurso {id_recurso}: {recurso.get('nombre')} - Tipo: {recurso.get('tipo')}")
+                    
+                    # Aplicar filtros de fecha
+                    fecha_bitacora = salida.get('fecha')
+                    fecha_cumple = True
+                    
+                    if fecha_bitacora:
+                        try:
+                            if 'T' in fecha_bitacora:
+                                fecha_obj = datetime.strptime(fecha_bitacora.split('T')[0], '%Y-%m-%d')
+                            else:
+                                fecha_obj = datetime.strptime(fecha_bitacora, '%Y-%m-%d')
+                            
+                            # Filtro por año
+                            if a365dias_filtro and fecha_obj.year != a365dias_filtro:
+                                fecha_cumple = False
+                            
+                            # Filtro por mes
+                            if fecha_cumple and mes_filtro and fecha_obj.month != mes_filtro:
+                                fecha_cumple = False
+                            
+                            # Filtro por día
+                            if fecha_cumple and dia_filtro and fecha_obj.day != dia_filtro:
+                                fecha_cumple = False
+                                
+                        except Exception as e:
+                            print(f"Error parseando fecha {fecha_bitacora}: {e}")
+                            fecha_cumple = False
+                    
+                    # Si no cumple con los filtros de fecha, saltar
+                    if not fecha_cumple:
+                        continue
+                    
+                    # Filtro por tipo de recurso - SOLO aplicar si se especifica
+                    if tipo_recurso_filtro and tipo_recurso_filtro != "Todos":
+                        if recurso.get('tipo') != tipo_recurso_filtro:
+                            continue
+                    
+                    # Filtro por laboratorio - SOLO aplicar si se especifica
+                    if laboratorio_filtro and laboratorio_filtro != "Todos":
+                        id_lab = recurso.get('idLab')
+                        if id_lab in laboratorios_dict:
+                            lab_nombre = laboratorios_dict[id_lab].get('nombre', '')
+                            if laboratorio_filtro != lab_nombre:
+                                continue
+                        else:
+                            continue  # Si no tiene laboratorio, saltar
+                    
+                    salidas_material.append(salida)
+        
+        print(f"Salidas de material filtradas: {len(salidas_material)}")
+        
+        # Contar consumo por material
+        consumo_por_material = {}
+        for salida in salidas_material:
+            id_recurso = salida.get('idRecurso')
+            if id_recurso in recursos_dict and id_recurso in material_dict:
+                recurso = recursos_dict[id_recurso]
+                material = material_dict[id_recurso]
+                
+                # Extraer cantidad de la descripción o usar 1 por defecto
+                descripcion = salida.get('descripcion', '')
+                cantidad = 1
+                
+                # Intentar extraer cantidad de la descripción
+                if descripcion:
+                    import re
+                    numeros = re.findall(r'\d+', descripcion)
+                    if numeros:
+                        cantidad = int(numeros[0])
+                    # También buscar patrones comunes
+                    elif 'unidad' in descripcion.lower():
+                        cantidad = 1
+                    elif 'cantidad' in descripcion.lower():
+                        # Buscar después de la palabra cantidad
+                        match = re.search(r'cantidad[\s:]*(\d+)', descripcion.lower())
+                        if match:
+                            cantidad = int(match.group(1))
+                
+                nombre_material = recurso.get('nombre', f'Material {id_recurso}')
+                consumo_por_material[nombre_material] = consumo_por_material.get(nombre_material, 0) + cantidad
+                
+                print(f"Material: {nombre_material}, Cantidad: {cantidad}, Descripción: {descripcion}")
+        
+        # Formatear respuesta
+        data = [{"material": material, "cantidad": cantidad} 
+               for material, cantidad in consumo_por_material.items()]
+        
+        print(f"Datos Consumo Materiales finales: {len(data)} materiales")
+        return jsonify({"data": data})
+        
+    except Exception as e:
+        print(f"Error en reporte_consumo_materiales: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"data": []})  # Retornar array vacío en caso de error
+
+# Endpoint para Reporte de Desempeño
+@administradores_bp.route('/reportes/desempeno', methods=['GET'])
+def get_reporte_desempeno():
+    try:
+        # Obtener parámetros de filtro
+        laboratorio_filtro = request.args.get('laboratorio', type=str)
+        a365dias_filtro = request.args.get('a365dias', type=int)
+        mes_filtro = request.args.get('mes', type=int)
+
+        print(f"Reporte Desempeño - Filtros: laboratorio={laboratorio_filtro}, a365dias={a365dias_filtro}, mes={mes_filtro}")
+
+        # Obtener datos de solicitudes y laboratorios
+        respuesta_solicitudes = readSolicitudes()
+        respuesta_laboratorios = readLaboratorio()
+        
+        if respuesta_solicitudes != 501 and respuesta_laboratorios != 501:
+            # Crear diccionario de laboratorios
+            laboratorios_dict = {l['idLab']: l for l in respuesta_laboratorios.data}
+            
+            # Filtrar solicitudes aprobadas
+            solicitudes_aprobadas = [s for s in respuesta_solicitudes.data 
+                                   if s.get('estado') == 'Aprobada']
+            
+            # Calcular tiempo de respuesta por laboratorio
+            tiempos_por_laboratorio = {}
+            conteo_por_laboratorio = {}
+            
+            for solicitud in solicitudes_aprobadas:
+                id_lab = solicitud.get('idLab')
+                if id_lab in laboratorios_dict:
+                    # Filtro por laboratorio
+                    if laboratorio_filtro and laboratorio_filtro != "Todos":
+                        lab_nombre = laboratorios_dict[id_lab].get('nombre', '')
+                        if laboratorio_filtro not in lab_nombre:
+                            continue
+                    
+                    fecha_soli = solicitud.get('fechaSoli')
+                    fecha_resp = solicitud.get('fechaResp')
+                    
+                    # Aplicar filtros de fecha
+                    if fecha_soli:
+                        try:
+                            if 'T' in fecha_soli:
+                                fecha_soli_obj = datetime.strptime(fecha_soli.split('T')[0], '%Y-%m-%d')
+                            else:
+                                fecha_soli_obj = datetime.strptime(fecha_soli, '%Y-%m-%d')
+                            
+                            # Filtro por año
+                            if a365dias_filtro and fecha_soli_obj.year != a365dias_filtro:
+                                continue
+                            
+                            # Filtro por mes
+                            if mes_filtro and fecha_soli_obj.month != mes_filtro:
+                                continue
+                                
+                        except Exception as e:
+                            print(f"⚠️ Error parseando fecha {fecha_soli}: {e}")
+                            continue
+                    
+                    # Calcular tiempo de respuesta (diferencia entre fechaSoli y fechaResp)
+                    if fecha_soli and fecha_resp:
+                        try:
+                            if 'T' in fecha_soli:
+                                fecha_soli_obj = datetime.strptime(fecha_soli.replace('T', ' ')[:19], '%Y-%m-%d %H:%M:%S')
+                            else:
+                                fecha_soli_obj = datetime.strptime(fecha_soli, '%Y-%m-%d %H:%M:%S')
+                            
+                            if 'T' in fecha_resp:
+                                fecha_resp_obj = datetime.strptime(fecha_resp.replace('T', ' ')[:19], '%Y-%m-%d %H:%M:%S')
+                            else:
+                                fecha_resp_obj = datetime.strptime(fecha_resp, '%Y-%m-%d %H:%M:%S')
+                            
+                            tiempo_respuesta = (fecha_resp_obj - fecha_soli_obj).total_seconds() / 3600  # en horas
+                            
+                            lab_nombre = laboratorios_dict[id_lab].get('nombre', f'Laboratorio {id_lab}')
+                            
+                            if lab_nombre not in tiempos_por_laboratorio:
+                                tiempos_por_laboratorio[lab_nombre] = 0
+                                conteo_por_laboratorio[lab_nombre] = 0
+                            
+                            tiempos_por_laboratorio[lab_nombre] += tiempo_respuesta
+                            conteo_por_laboratorio[lab_nombre] += 1
+                            
+                        except Exception as e:
+                            print(f"Error calculando tiempo de respuesta: {e}")
+                            continue
+            
+            # Calcular promedios
+            data = []
+            for lab_nombre, tiempo_total in tiempos_por_laboratorio.items():
+                conteo = conteo_por_laboratorio[lab_nombre]
+                if conteo > 0:
+                    promedio_horas = tiempo_total / conteo
+                    horas = int(promedio_horas)
+                    minutos = int((promedio_horas - horas) * 60)
+                    tiempo_formateado = f"{horas}h {minutos}m"
+                    
+                    data.append({
+                        "laboratorio": lab_nombre,
+                        "tiempo_promedio": tiempo_formateado
+                    })
+            
+            print(f"Datos Desempeño: {len(data)} laboratorios")
+            return jsonify({"data": data})
+        else:
+            return "Error en la BD", 500
+            
+    except Exception as e:
+        print(f"Error en reporte_desempeno: {e}")
+        return "Error interno del servidor", 500
+
+# Endpoint para Exportar a PDF (placeholder)
+@administradores_bp.route('/reportes/exportar_pdf', methods=['GET'])
+def exportar_reporte_pdf():
+    try:
+        # Este es un placeholder - en producción generarías un PDF real
+        print("Exportando reporte a PDF...")
+        
+        # Por ahora retornamos un mensaje de éxito
+        return jsonify({
+            "success": True,
+            "message": "Reporte exportado correctamente (funcionalidad en desarrollo)",
+            "download_url": "#"
+        })
+        
+    except Exception as e:
+        print(f"Error exportando PDF: {e}")
+        return "Error interno del servidor", 500
+
+#-------------------------------------
+# OPCIONES DE FILTROS PARA REPORTES
+
+# Endpoint para obtener tipos de recursos únicos
+@administradores_bp.route('/filtros/tipos_recursos', methods=['GET'])
+def get_tipos_recursos():
+    try:
+        print("Obteniendo tipos de recursos...")
+        
+        # Obtener todos los recursos
+        respuesta_recursos = readRecursos()
+        
+        if respuesta_recursos != 501:
+            # Extraer tipos únicos de recursos
+            tipos_recursos = set()
+            for recurso in respuesta_recursos.data:
+                tipo = recurso.get('tipo')
+                if tipo:
+                    tipos_recursos.add(tipo)
+            
+            # Convertir a lista y ordenar
+            tipos_lista = sorted(list(tipos_recursos))
+            
+            print(f"Tipos de recursos encontrados: {tipos_lista}")
+            return jsonify({
+                "success": True,
+                "data": tipos_lista
+            })
+        else:
+            return jsonify({
+                "success": False,
+                "error": "Error en la BD al leer recursos"
+            }), 500
+            
+    except Exception as e:
+        print(f"Error en get_tipos_recursos: {e}")
+        return jsonify({
+            "success": False,
+            "error": "Error interno del servidor"
+        }), 500
+
+# Endpoint para obtener laboratorios únicos
+@administradores_bp.route('/filtros/laboratorios', methods=['GET'])
+def get_laboratorios():
+    try:
+        print("Obteniendo laboratorios...")
+        
+        # Obtener todos los laboratorios
+        respuesta_laboratorios = readLaboratorio()
+        
+        if respuesta_laboratorios != 501:
+            # Extraer nombres de laboratorios únicos
+            laboratorios_set = set()
+            for laboratorio in respuesta_laboratorios.data:
+                nombre = laboratorio.get('nombre')
+                if nombre:
+                    laboratorios_set.add(nombre)
+            
+            # Convertir a lista y ordenar
+            laboratorios_lista = sorted(list(laboratorios_set))
+            
+            print(f"Laboratorios encontrados: {laboratorios_lista}")
+            return jsonify({
+                "success": True,
+                "data": laboratorios_lista
+            })
+        else:
+            return jsonify({
+                "success": False,
+                "error": "Error en la BD al leer laboratorios"
+            }), 500
+            
+    except Exception as e:
+        print(f"Error en get_laboratorios: {e}")
+        return jsonify({
+            "success": False,
+            "error": "Error interno del servidor"
+        }), 500
+
+# Endpoint para obtener años disponibles en los datos
+@administradores_bp.route('/filtros/a365dias_disponibles', methods=['GET'])
+def get_a365dias_disponibles():
+    try:
+        print("Obteniendo años disponibles...")
+        
+        # Obtener datos de bitácora y solicitudes para extraer años
+        respuesta_bitacora = readBitRecursos()
+        respuesta_solicitudes = readSolicitudes()
+        
+        a365dias_set = set()
+        
+        # Extraer años de la bitácora
+        if respuesta_bitacora != 501:
+            for registro in respuesta_bitacora.data:
+                fecha = registro.get('fecha')
+                if fecha:
+                    try:
+                        if 'T' in fecha:
+                            fecha_obj = datetime.strptime(fecha.split('T')[0], '%Y-%m-%d')
+                        else:
+                            fecha_obj = datetime.strptime(fecha, '%Y-%m-%d')
+                        a365dias_set.add(fecha_obj.year)
+                    except Exception as e:
+                        print(f"Error parseando fecha bitácora {fecha}: {e}")
+                        continue
+        
+        # Extraer años de las solicitudes
+        if respuesta_solicitudes != 501:
+            for solicitud in respuesta_solicitudes.data:
+                fecha_soli = solicitud.get('fechaSoli')
+                if fecha_soli:
+                    try:
+                        if 'T' in fecha_soli:
+                            fecha_obj = datetime.strptime(fecha_soli.split('T')[0], '%Y-%m-%d')
+                        else:
+                            fecha_obj = datetime.strptime(fecha_soli, '%Y-%m-%d')
+                        a365dias_set.add(fecha_obj.year)
+                    except Exception as e:
+                        print(f"Error parseando fecha solicitud {fecha_soli}: {e}")
+                        continue
+        
+        # Convertir a lista y ordenar descendente
+        a365dias_lista = sorted(list(a365dias_set), reverse=True)
+        
+        # Si no hay años, usar el año actual como mínimo
+        if not a365dias_lista:
+            a365dias_lista = [datetime.now().year]
+
+        print(f"Años disponibles: {a365dias_lista}")
+        return jsonify({
+            "success": True,
+            "data": a365dias_lista
+        })
+        
+    except Exception as e:
+        print(f"Error en get_a365dias_disponibles: {e}")
+        return jsonify({
+            "success": False,
+            "error": "Error interno del servidor"
+        }), 500

@@ -2,7 +2,6 @@ import { DptoCarrera } from "@/model/dptocar";
 import { ParamGlob } from "@/model/paramGlob";
 import { Rol } from "@/model/roles";
 import { Etiqueta } from "@/model/etiqueta";
-import { usuario } from "@/model/usuarios";
 
 const API_URL = "http://localhost:5000/administradores";
 
@@ -209,4 +208,168 @@ export const buscarUsuarios = async (nombre: string): Promise<any> => {
     body: JSON.stringify({ nombre }),
   });
   return res.json();
+};
+
+// -------------------- BITÁCORA --------------------
+export const readBitacoraAcciones = async (): Promise<any> => {
+  const res = await fetch(`${API_URL}/bitacora/read`);
+  return res.json();
+};
+
+export const buscarBitacora = async (filtros: any = {}): Promise<any> => {
+  const params = new URLSearchParams();
+  
+  if (filtros.usuario && filtros.usuario !== '') {
+    params.append('usuario', filtros.usuario);
+  }
+  
+  if (filtros.accion && filtros.accion !== 'Todas') {
+    params.append('accion', filtros.accion);
+  }
+  
+  if (filtros.modulo && filtros.modulo !== 'Todos') {
+    params.append('modulo', filtros.modulo);
+  }
+  
+  // Filtros de fecha ahora son opcionales individualmente
+  if (filtros.a365dias) {
+    params.append('365dias', filtros.a365dias);
+  }
+  
+  if (filtros.mes) {
+    params.append('mes', filtros.mes);
+  }
+  
+  if (filtros.dia) {
+    params.append('dia', filtros.dia);
+  }
+  
+  const queryString = params.toString();
+  const url = queryString ? `${API_URL}/bitacora/buscar?${queryString}` : `${API_URL}/bitacora/read`;
+  
+  const res = await fetch(url);
+  return res.json();
+};
+
+// -------------------- REPORTES INSTITUCIONALES --------------------
+export const getReporteUsoGlobal = async (filtros: any = {}): Promise<any> => {
+  const params = new URLSearchParams();
+  
+  if (filtros.tipoRecurso && filtros.tipoRecurso !== 'Todos') {
+    params.append('tipo_recurso', filtros.tipoRecurso);
+  }
+  
+  if (filtros.laboratorio && filtros.laboratorio !== 'Todos') {
+    params.append('laboratorio', filtros.laboratorio);
+  }
+  
+  if (filtros.a365dias) {
+    params.append('365dias', filtros.a365dias);
+  }
+  
+  if (filtros.mes) {
+    params.append('mes', filtros.mes);
+  }
+  
+  if (filtros.dia) {
+    params.append('dia', filtros.dia);
+  }
+  
+  const queryString = params.toString();
+  const res = await fetch(`${API_URL}/reportes/uso_global?${queryString}`);
+  return res.json();
+};
+
+export const getReporteConsumoMateriales = async (filtros: any = {}): Promise<any> => {
+  const params = new URLSearchParams();
+  
+  if (filtros.tipoRecurso && filtros.tipoRecurso !== 'Todos') {
+    params.append('tipo_recurso', filtros.tipoRecurso);
+  }
+  
+  if (filtros.laboratorio && filtros.laboratorio !== 'Todos') {
+    params.append('laboratorio', filtros.laboratorio);
+  }
+  
+  if (filtros.a365dias) {
+    params.append('365dias', filtros.a365dias);
+  }
+  
+  if (filtros.mes) {
+    params.append('mes', filtros.mes);
+  }
+  
+  if (filtros.dia) {
+    params.append('dia', filtros.dia);
+  }
+  
+  const queryString = params.toString();
+  const res = await fetch(`${API_URL}/reportes/consumo_materiales?${queryString}`);
+  return res.json();
+};
+
+export const getReporteDesempeno = async (filtros: any = {}): Promise<any> => {
+  const params = new URLSearchParams();
+  
+  if (filtros.laboratorio && filtros.laboratorio !== 'Todos') {
+    params.append('laboratorio', filtros.laboratorio);
+  }
+
+  if (filtros.a365dias) {
+    params.append('365dias', filtros.a365dias);
+  }
+  
+  if (filtros.mes) {
+    params.append('mes', filtros.mes);
+  }
+  
+  const queryString = params.toString();
+  const res = await fetch(`${API_URL}/reportes/desempeno?${queryString}`);
+  return res.json();
+};
+
+// -------------------- OPCIONES DE FILTROS PARA REPORTES --------------------
+export const getTiposRecursos = async (): Promise<any> => {
+  try {
+    const res = await fetch(`${API_URL}/filtros/tipos_recursos`);
+    return res.json();
+  } catch (error) {
+    console.error('Error obteniendo tipos de recursos:', error);
+    return {
+      success: false,
+      data: ['Equipo', 'Material', 'Software', 'Herramienta'] // Valores por defecto
+    };
+  }
+};
+
+export const getLaboratorios = async (): Promise<any> => {
+  try {
+    const res = await fetch(`${API_URL}/filtros/laboratorios`);
+    return res.json();
+  } catch (error) {
+    console.error('Error obteniendo laboratorios:', error);
+    return {
+      success: false,
+      data: ['Lab de Computación', 'Lab de Química', 'Lab de Física', 'Lab de Biología'] // Valores por defecto
+    };
+  }
+};
+
+export const get365DiasDisponibles = async (): Promise<any> => {
+  try {
+    const res = await fetch(`${API_URL}/filtros/a365dias_disponibles`);
+    return res.json();
+  } catch (error) {
+    console.error('Error obteniendo 365 días disponibles:', error);
+    // Retornar años recientes por defecto
+    const currentYear = new Date().getFullYear();
+    const a365dias = [];
+    for (let i = currentYear; i >= currentYear - 5; i--) {
+      a365dias.push(i);
+    }
+    return {
+      success: false,
+      data: a365dias
+    };
+  }
 };

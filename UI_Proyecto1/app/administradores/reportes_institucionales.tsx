@@ -6,9 +6,23 @@ import { Card } from '@/components/ui/card';
 import { Picker } from '@react-native-picker/picker';
 
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Alert} from 'react-native';
+import { ScrollView, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+
+import { 
+  getReporteUsoGlobal,
+  getReporteConsumoMateriales,
+  getReporteDesempeno,
+  getTiposRecursos,
+  getLaboratorios,
+  get365DiasDisponibles
+} from '@/services/moduloAdmin_service';
+
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 export default function reportesInstitucionalesAdmins() {
 
@@ -21,90 +35,374 @@ export default function reportesInstitucionalesAdmins() {
       router.replace('/administradores/dashboard');
   };
 
-  const handleFiltrar = () => {
-    if (!isWeb) {
-        Alert.alert('Funcionalidad de filtrado no implementada aún.');
-    }
-    else {
-        window.alert('Funcionalidad de filtrado no implementada aún.');
-    }
-  };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Estados para los datos de los reportes
+  const [usoGlobal, setUsoGlobal] = useState<any[]>([]);
+  const [consumoMateriales, setConsumoMateriales] = useState<any[]>([]);
+  const [desempeno, setDesempeno] = useState<any[]>([]);
 
-  const handleExportar = () => {
-    if (!isWeb) {
-        Alert.alert('Funcionalidad de exportación no implementada aún.');
-    }
-    else {
-        window.alert('Funcionalidad de exportación no implementada aún.');
-    }
-  };
-
+  // Estados para los filtros
   const [searchRecurso, setSearchRecurso] = useState('Todos');
   const [searchLaboratorio, setSearchLaboratorio] = useState('Todos');
+  const [selectedFechaDia, setSelectedFechaDia] = useState('');
+  const [selectedFechaMes, setSelectedFechaMes] = useState('');
+  const [selectedFecha365Dias, setSelectedFecha365Dias] = useState('');
 
-  const [selectedFechaDia, setSelectedFechaDia] = useState('29');
-  const [selectedFechaMes, setSelectedFechaMes] = useState('9');
-  const [selectedFecha365Dias, setSelectedFecha365Dias] = useState('2025');
+  // Estados para opciones de filtros
+  const [tiposRecursos, setTiposRecursos] = useState<string[]>([]);
+  const [laboratorios, setLaboratorios] = useState<string[]>([]);
+  const [diasDisponibles, setDiasDisponibles] = useState<number[]>([]);
+  const [a365DiasDisponibles, setA365DiasDisponibles] = useState<number[]>([]);
 
-  type Log = { usuario: string; modulo: string; fecha: string; accion: string; };
+  // Función para obtener días disponibles según mes y año
+  const getDiasEnMes = (mes: number, año: number) => {
+    // Mes en JavaScript: 0=enero, 11=diciembre
+    return new Date(año, mes, 0).getDate();
+  };
 
-  const logs: Log[] = [
-    { usuario: 'Juan Pérez', modulo: 'Reservas', fecha: '2025-09-25', accion: 'Creó una reserva' },
-    { usuario: 'María Gómez', modulo: 'Usuarios', fecha: '2025-09-24', accion: 'Modificó un perfil' },
-    { usuario: 'Carlos Rojas', modulo: 'Inventario', fecha: '2025-09-23', accion: 'Eliminó un recurso' },
-    { usuario: 'Ana Martínez', modulo: 'Reportes', fecha: '2025-09-22', accion: 'Generó un reporte' },
-    { usuario: 'Luis Fernández', modulo: 'Mantenimiento', fecha: '2025-09-21', accion: 'Actualizó estado de mantenimiento' },
-    { usuario: 'Sofía López', modulo: 'Configuración', fecha: '2025-09-20', accion: 'Cambió parámetros del sistema' },
-    { usuario: 'Miguel Torres', modulo: 'Notificaciones', fecha: '2025-09-19', accion: 'Envié una notificación' },
-    { usuario: 'Laura Sánchez', modulo: 'Seguridad', fecha: '2025-09-18', accion: 'Actualizó permisos de usuario' },
-    { usuario: 'Diego Ramírez', modulo: 'Auditoría', fecha: '2025-09-17', accion: 'Revisó logs del sistema' },
-    { usuario: 'Elena Cruz', modulo: 'Soporte', fecha: '2025-09-16', accion: 'Atendió un ticket de soporte' },
-  ];
+  // Actualizar días disponibles cuando cambia mes o año
+  useEffect(() => {
+    if (selectedFechaMes && selectedFecha365Dias) {
+      const mes = parseInt(selectedFechaMes);
+      const año = parseInt(selectedFecha365Dias);
+      const numDias = getDiasEnMes(mes, año);
+      const dias = Array.from({ length: numDias }, (_, i) => i + 1);
+      setDiasDisponibles(dias);
+      
+      // Si el día seleccionado es mayor que los días disponibles, resetear
+      if (parseInt(selectedFechaDia) > numDias) {
+        setSelectedFechaDia('');
+      }
+    } else {
+      setDiasDisponibles([]);
+    }
+  }, [selectedFechaMes, selectedFecha365Dias]);
 
-  // 🔹 DATOS PARA LOS FILTROS
-  const tiposRecursos = [
-    'Todos',
-    'Equipos de Computación',
-    'Equipos de Laboratorio',
-    'Materiales de Consumo',
-    'Reactivos Químicos',
-    'Equipos de Medición',
-    'Herramientas',
-    'Mobiliario',
-    'Equipos Audiovisuales'
-  ];
+  // Cargar datos iniciales y opciones de filtros
+  const cargarDatosIniciales = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Cargar reportes y opciones de filtros en paralelo
+      await Promise.all([
+        cargarReportes(),
+        cargarOpcionesFiltros()
+      ]);
+    } catch (err) {
+      setError('Error de conexión al cargar datos');
+      console.error('Error cargando datos:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const laboratorios = [
-    'Todos',
-    'Laboratorio de Química',
-    'Laboratorio de Física',
-    'Laboratorio de Computación',
-    'Laboratorio de Electrónica',
-    'Laboratorio de Biología',
-    'Laboratorio de Mecánica',
-    'Laboratorio de Investigación',
-    'Laboratorio de Pruebas'
-  ];
+  // Cargar opciones para los filtros desde el backend
+  const cargarOpcionesFiltros = async () => {
+    try {
+      console.log("Cargando opciones de filtros...");
+      
+      const [tiposRes, laboratoriosRes, a365diasRes] = await Promise.all([
+        getTiposRecursos(),
+        getLaboratorios(),
+        get365DiasDisponibles()
+      ]);
 
-  // Datos de ejemplo para las nuevas tablas
-  const materiales = [
-    { material: 'Alcohol', cantidad: 120 },
-    { material: 'Guantes', cantidad: 300 },
-    { material: 'Reactivos', cantidad: 45 },
-    { material: 'Papel', cantidad: 500 },
-  ];
+      // Manejar tipos de recursos
+      if (tiposRes.success && tiposRes.data) {
+        setTiposRecursos(tiposRes.data);
+        console.log(`Tipos de recursos cargados: ${tiposRes.data.length}`);
+      } else {
+        console.warn('No se encontraron tipos de recursos para filtrar');
+      }
 
-  const desempeno = [
-    { laboratorio: 'Lab Química', tiempo: '2h 15m' },
-    { laboratorio: 'Lab Física', tiempo: '1h 40m' },
-    { laboratorio: 'Lab Computación', tiempo: '3h 05m' },
-    { laboratorio: 'Lab Electrónica', tiempo: '2h 50m' },
-  ];
+      // Manejar laboratorios
+      if (laboratoriosRes.success && laboratoriosRes.data) {
+        setLaboratorios(laboratoriosRes.data);
+        console.log(`Laboratorios cargados: ${laboratoriosRes.data.length}`);
+      } else {
+        console.warn('No se encontraron laboratorios para filtrar');
+      }
 
-  /* Para los filtros */
-  const usuariosUnicos = [...new Set(logs.map(l => l.usuario))];
-  const modulosUnicos = [...new Set(logs.map(l => l.modulo))];
-  const accionesUnicas = [...new Set(logs.map(l => l.accion))];
+      // Manejar años disponibles (para mejorar el picker de años)
+      if (a365diasRes.success && a365diasRes.data) {
+        setA365DiasDisponibles(a365diasRes.data);
+        console.log(`Años disponibles: ${a365diasRes.data.length}`);
+      }
+
+    } catch (err) {
+      console.error('Error cargando opciones de filtros:', err);
+    }
+  };
+
+  // Cargar reportes iniciales
+  const cargarReportes = async (filtros: any = {}) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      console.log("Cargando reportes con filtros:", filtros);
+      
+      const [usoGlobalRes, consumoRes, desempenoRes] = await Promise.all([
+        getReporteUsoGlobal(filtros),
+        getReporteConsumoMateriales(filtros),
+        getReporteDesempeno(filtros)
+      ]);
+
+      console.log("Respuestas recibidas:", {
+        usoGlobal: usoGlobalRes,
+        consumo: consumoRes,
+        desempeno: desempenoRes
+      });
+
+      if (usoGlobalRes.data && consumoRes.data && desempenoRes.data) {
+        setUsoGlobal(usoGlobalRes.data);
+        setConsumoMateriales(consumoRes.data);
+        setDesempeno(desempenoRes.data);
+      } else {
+        setError('Error al cargar los reportes');
+      }
+    } catch (err) {
+      setError('Error de conexión al cargar reportes');
+      console.error('Error cargando reportes:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    cargarDatosIniciales(); // Cargar reportes sin filtros al inicio
+  }, []);
+
+  const handleFiltrar = async () => {
+    const filtros: any = {};
+    
+    if (searchRecurso !== 'Todos') {
+      filtros.tipoRecurso = searchRecurso;
+    }
+    
+    if (searchLaboratorio !== 'Todos') {
+      filtros.laboratorio = searchLaboratorio;
+    }
+    
+    if (selectedFecha365Dias) {
+      filtros.a365dias = selectedFecha365Dias;
+    }
+    
+    if (selectedFechaMes) {
+      filtros.mes = selectedFechaMes;
+    }
+    
+    if (selectedFechaDia) {
+      filtros.dia = selectedFechaDia;
+    }
+    
+    await cargarReportes(filtros);
+  };
+
+  const handleLimpiarFiltros = async () => {
+    setSearchRecurso('Todos');
+    setSearchLaboratorio('Todos');
+    setSelectedFechaDia('');
+    setSelectedFechaMes('');
+    setSelectedFecha365Dias('');
+    await cargarReportes(); // Cargar sin filtros
+  };
+
+  const generarHTML = () => {
+    const usoGlobalHTML = usoGlobal.map((item) => `
+      <tr>
+        <td>${item.servicio || 'N/A'}</td>
+        <td>${item.cantidad || 0}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="2">No hay datos</td></tr>';
+
+    const consumoHTML = consumoMateriales.map((item) => `
+      <tr>
+        <td>${item.material || 'N/A'}</td>
+        <td>${item.cantidad || 0}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="2">No hay datos</td></tr>';
+
+    const desempenoHTML = desempeno.map((item) => `
+      <tr>
+        <td>${item.laboratorio || 'N/A'}</td>
+        <td>${item.tiempo_promedio || 'N/A'}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="2">No hay datos</td></tr>';
+
+    return `
+    <html>
+      <head>
+        <meta charset="UTF-8" />
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            color: #333;
+            font-size: 12px;
+          }
+          h1 {
+            text-align: center;
+            color: #1e90ff;
+            font-size: 18px;
+          }
+          h2 {
+            color: #333;
+            font-size: 14px;
+            margin-top: 25px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            page-break-inside: auto;
+          }
+          th, td {
+            border: 1px solid #ccc;
+            padding: 6px;
+            text-align: left;
+          }
+          th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+          }
+          tr:nth-child(even) {
+            background-color: #f9f9f9;
+          }
+          footer {
+            text-align: center;
+            font-size: 10px;
+            margin-top: 30px;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Reporte Institucional</h1>
+
+        <h2>Uso Global</h2>
+        <table>
+          <tr><th>Servicio</th><th>Cantidad</th></tr>
+          ${usoGlobalHTML}
+        </table>
+
+        <h2>Consumo de Materiales</h2>
+        <table>
+          <tr><th>Material</th><th>Cantidad</th></tr>
+          ${consumoHTML}
+        </table>
+
+        <h2>Desempeño</h2>
+        <table>
+          <tr><th>Laboratorio</th><th>Tiempo Promedio</th></tr>
+          ${desempenoHTML}
+        </table>
+
+        <footer>
+          Generado el ${new Date().toLocaleDateString()}
+        </footer>
+      </body>
+    </html>
+    `;
+  };
+
+  const generarPDF = async () => {
+    try {
+      const htmlContent = generarHTML(); // usa tu función dinámica
+
+      if (isWeb) {
+        // Crear un contenedor oculto para renderizar el HTML
+        const container = document.createElement("div");
+        container.innerHTML = htmlContent;
+        container.style.position = "absolute";
+        container.style.left = "-9999px";
+        container.style.width = "800px"; // ancho controlado
+        document.body.appendChild(container);
+
+        // Capturar el HTML como imagen escalada
+        const canvas = await html2canvas(container, {
+          scale: 2, // más resolución
+          useCORS: true,
+          backgroundColor: "#ffffff",
+        });
+
+        const imgData = canvas.toDataURL("image/png");
+
+        // Configurar PDF tamaño A4
+        const pdf = new jsPDF("p", "pt", "a4");
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+
+        const imgWidth = pdfWidth;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        // Primera página
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+
+        // Agregar páginas extra si el contenido es largo
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+          heightLeft -= pdfHeight;
+        }
+
+        pdf.save("reporte.pdf");
+        document.body.removeChild(container);
+      } else {
+        // 📱 Móvil
+        const { uri } = await Print.printToFileAsync({ html: htmlContent });
+        console.log("PDF generado:", uri);
+
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(uri);
+        } else {
+          Alert.alert("PDF generado", `Ubicación: ${uri}`);
+        }
+      }
+    } catch (error) {
+      console.error("Error generando PDF:", error);
+      Alert.alert("Error", "No se pudo generar el PDF");
+    }
+  };
+
+  const handleExportar = async () => {
+    try {
+      setLoading(true);
+      await generarPDF();
+    } catch (err) {
+      console.error('Error inesperado en handleExportar:', err);
+      Alert.alert('Error', 'Ocurrió un error inesperado al generar el PDF');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text style={styles.loadingText}>Cargando reportes...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+        <Button onPress={() => cargarReportes()} variant="solid" size="sm">
+          <ButtonText>Reintentar</ButtonText>
+        </Button>
+      </View>
+    );
+  }
 
   return (
     <ScrollView 
@@ -121,7 +419,7 @@ export default function reportesInstitucionalesAdmins() {
           showsHorizontalScrollIndicator={true}
           contentContainerStyle={styles.horizontalContainer}
         >
-          <Text style={{...styles.title, paddingBottom: 10, paddingLeft: 70, paddingRight: 70 }}>Bitácora</Text>
+          <Text style={{...styles.title, paddingBottom: 10, paddingLeft: 70, paddingRight: 70 }}>Reportes Institucionales</Text>
           <Button onPress={handleReturn} variant="solid" className="bg-white" size="md" action="primary"
           style={{ alignContent: 'center', justifyContent: 'center' }}>
             <ButtonText className="text-black">Regresar</ButtonText>
@@ -146,13 +444,19 @@ export default function reportesInstitucionalesAdmins() {
             <Text style={styles.headerCellModule}>Cantidad</Text>
           </View>
           <ScrollView style={{...styles.tableContainer, marginBottom: 8 }}>
-            {logs.map((log, i) => (
-              <View key={i} style={styles.tableRow}>
-                <Text style={styles.tableCellUser}>{log.usuario}</Text>
-                <View style={styles.verticalSeparator} />
-                <Text style={styles.tableCellModule}>{log.modulo}</Text>
+            {usoGlobal.length > 0 ? (
+              usoGlobal.map((item, i) => (
+                <View key={i} style={styles.tableRow}>
+                  <Text style={styles.tableCellUser}>{item.servicio || 'N/A'}</Text>
+                  <View style={styles.verticalSeparator} />
+                  <Text style={styles.tableCellModule}>{item.cantidad || 0}</Text>
+                </View>
+              ))
+            ) : (
+              <View style={styles.tableRow}>
+                <Text style={styles.noDataText}>No hay registro de datos</Text>
               </View>
-            ))}
+            )}
           </ScrollView>
         </Card>
 
@@ -165,13 +469,19 @@ export default function reportesInstitucionalesAdmins() {
             <Text style={styles.headerCellModule}>Cantidad</Text>
           </View>
           <ScrollView style={{...styles.tableContainer, marginBottom: 8 }}>
-            {materiales.map((mat, i) => (
-              <View key={i} style={styles.tableRow}>
-                <Text style={styles.tableCellUser}>{mat.material}</Text>
-                <View style={styles.verticalSeparator} />
-                <Text style={styles.tableCellModule}>{mat.cantidad}</Text>
+            {consumoMateriales.length > 0 ? (
+              consumoMateriales.map((item, i) => (
+                <View key={i} style={styles.tableRow}>
+                  <Text style={styles.tableCellUser}>{item.material || 'N/A'}</Text>
+                  <View style={styles.verticalSeparator} />
+                  <Text style={styles.tableCellModule}>{item.cantidad || 0}</Text>
+                </View>
+              ))
+            ) : (
+              <View style={styles.tableRow}>
+                <Text style={styles.noDataText}>No hay registro de datos</Text>
               </View>
-            ))}
+            )}
           </ScrollView>
         </Card>
 
@@ -184,13 +494,19 @@ export default function reportesInstitucionalesAdmins() {
             <Text style={styles.headerCellModule}>Tiempo promedio de respuesta</Text>
           </View>
           <ScrollView style={{...styles.tableContainer, marginBottom: 8 }}>
-            {desempeno.map((lab, i) => (
-              <View key={i} style={styles.tableRow}>
-                <Text style={styles.tableCellUser}>{lab.laboratorio}</Text>
-                <View style={styles.verticalSeparator} />
-                <Text style={styles.tableCellModule}>{lab.tiempo}</Text>
+            {desempeno.length > 0 ? (
+              desempeno.map((item, i) => (
+                <View key={i} style={styles.tableRow}>
+                  <Text style={styles.tableCellUser}>{item.laboratorio || 'N/A'}</Text>
+                  <View style={styles.verticalSeparator} />
+                  <Text style={styles.tableCellModule}>{item.tiempo_promedio || 'N/A'}</Text>
+                </View>
+              ))
+            ) : (
+              <View style={styles.tableRow}>
+                <Text style={styles.noDataText}>No hay registro de datos</Text>
               </View>
-            ))}
+            )}
           </ScrollView>
         </Card>
       </View>
@@ -200,7 +516,7 @@ export default function reportesInstitucionalesAdmins() {
         <Text style={styles.filterTitle}>Filtros</Text>
             <View style={{...styles.filterContainer, width: 350, height: 550, backgroundColor: 'transparent', marginTop: -10, paddingTop: 0 }}>
             
-                <Text style={{...styles.filterTitle, flexDirection: 'column', marginTop: -20 }}>Tipo de Recurso</Text>
+                <Text style={{...styles.filterTitle, flexDirection: 'column', marginTop: -50 }}>Tipo de Recurso</Text>
                 <View style={{...styles.modifyContainer, paddingVertical: 15, flexDirection: 'column' }}>
                     <Picker
                     selectedValue={searchRecurso}
@@ -244,9 +560,10 @@ export default function reportesInstitucionalesAdmins() {
                         style={{...styles.picker, marginRight: 9, width: 70}}
                         onValueChange={(itemValue) => setSelectedFechaDia(itemValue)}
                         >
-                        {Array.from({ length: 31 }, (_, i) => i + 1).map((h) => (
-                                <Picker.Item key={h} label={`${h}`} value={h} />
-                            ))}
+                        <Picker.Item label="Día" value="" />
+                        {diasDisponibles.map((dia) => ( 
+                          <Picker.Item key={dia} label={`${dia}`} value={dia.toString()} />
+                        ))}
                         </Picker>
                 
                         <Picker
@@ -254,6 +571,7 @@ export default function reportesInstitucionalesAdmins() {
                         style={{...styles.picker, marginRight: 9, width: 135}}
                         onValueChange={(itemValue) => setSelectedFechaMes(itemValue)}
                         >
+                        <Picker.Item label="Mes" value="" />
                         <Picker.Item label="Enero" value="1" />
                         <Picker.Item label="Febrero" value="2" />
                         <Picker.Item label="Marzo" value="3" />
@@ -273,22 +591,10 @@ export default function reportesInstitucionalesAdmins() {
                         style={{...styles.picker, width: 85}}
                         onValueChange={(itemValue) => setSelectedFecha365Dias(itemValue)}
                         >
-                        <Picker.Item label="2025" value="2025" />
-                        <Picker.Item label="2024" value="2024" />
-                        <Picker.Item label="2023" value="2023" />
-                        <Picker.Item label="2022" value="2022" />
-                        <Picker.Item label="2021" value="2021" />
-                        <Picker.Item label="2020" value="2020" />
-                        <Picker.Item label="2019" value="2019" />
-                        <Picker.Item label="2018" value="2018" />
-                        <Picker.Item label="2017" value="2017" />
-                        <Picker.Item label="2016" value="2016" />
-                        <Picker.Item label="2015" value="2015" />
-                        <Picker.Item label="2014" value="2014" />
-                        <Picker.Item label="2013" value="2013" />
-                        <Picker.Item label="2012" value="2012" />
-                        <Picker.Item label="2011" value="2011" />
-                        <Picker.Item label="2010" value="2010" />
+                        <Picker.Item label="Año" value="" />
+                        {a365DiasDisponibles.map((a) => (
+                          <Picker.Item key={a} label={`${a}`} value={a.toString()} />
+                        ))}
                         </Picker>
                     </ScrollView>
                 </View>
@@ -303,9 +609,18 @@ export default function reportesInstitucionalesAdmins() {
                 >
                 <ButtonText className="text-white" style={{ color: '#fff' }}>Filtrar</ButtonText>
                 </Button>
+
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onPress={handleLimpiarFiltros}
+                  style={{...styles.clearButton, marginTop: 40, backgroundColor: '#434b52ff', borderColor: '#787879ff'}}
+                >
+                  <ButtonText className="text-black" style={{ color: '#fff' }}>Limpiar</ButtonText>
+                </Button>
             </View>
 
-            <Text style={{...styles.filterTitle, marginTop: -18, marginRight: 0}}>Exportar a PDF</Text>
+            <Text style={{...styles.filterTitle, marginTop: -62, marginRight: 0}}>Exportar a PDF</Text>
             <Button 
                 variant="solid" 
                 size="sm" 
@@ -386,6 +701,10 @@ const styles = StyleSheet.create({
     height: 37,
     justifyContent: 'center',
   },
+  clearButton: {
+    height: 37,
+    justifyContent: 'center',
+  },
   card: {
     width: 1000,
     padding: 15,
@@ -396,6 +715,24 @@ const styles = StyleSheet.create({
   tableContainer: {
     maxHeight: 1000, // espacio de elem mostrados sin scrollear
     width: '100%',
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffffff',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#666',
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 10,
+    textAlign: 'center',
+    fontSize: 16,
   },
 
   // 🔹 ESTILOS DE TABLA MEJORADOS
@@ -413,6 +750,13 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
     paddingHorizontal: 10, // Mismo padding que el header
     backgroundColor: '#ffffffff',
+  },
+  noDataText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    flex: 1,
+    paddingVertical: 20,
   },
   
   // 🔹 CELDAS DEL HEADER - MISMOS FLEX QUE LAS CELDAS NORMALES
