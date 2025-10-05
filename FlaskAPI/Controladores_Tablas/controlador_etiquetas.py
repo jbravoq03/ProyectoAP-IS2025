@@ -49,7 +49,7 @@ def readOneEtiqueta(pIdEtiqueta):
         response = (
             supabase.table(tabla)
             .select("*")
-            .eq("idEtiqueta", pIdEtiqueta)
+            .eq("id", pIdEtiqueta)
             .execute()
         )
         return response
@@ -63,7 +63,7 @@ def updateEtiqueta(pIdEtiqueta, pTag):
         response = (
             supabase.table(tabla)
             .update({"tag": pTag})
-            .eq("idEtiqueta", pIdEtiqueta)
+            .eq("id", pIdEtiqueta)
             .execute()
         )
         return response
@@ -77,7 +77,7 @@ def deleteEtiqueta(pIdEtiqueta):
         response = (
             supabase.table(tabla)
             .delete()
-            .eq("idEtiqueta", pIdEtiqueta)
+            .eq("id", pIdEtiqueta)
             .execute()
         )
         return response

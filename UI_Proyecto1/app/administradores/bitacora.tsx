@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Alert, ActivityIndicator, TextInput } from 'react-native';
 
-import { readBitacoraAcciones, buscarBitacora } from '@/services/moduloAdmin_service';
+import { readBitacoraAcciones, buscarBitacora, get365DiasDisponiblesBitacora } from '@/services/moduloAdmin_service';
 
 export default function bitacoraAdmins() {
 
@@ -33,17 +33,51 @@ export default function bitacoraAdmins() {
   const [selectedFechaMes, setSelectedFechaMes] = useState('');
   const [selectedFecha365Dias, setSelectedFecha365Dias] = useState('');
 
+  const [diasDisponibles, setDiasDisponibles] = useState<number[]>([]);
+  const [a365DiasDisponibles, setA365DiasDisponibles] = useState<number[]>([]);
+
+  // Función para obtener días disponibles según mes y año
+  const getDiasEnMes = (mes: number, año: number) => {
+    // Mes en JavaScript: 0=enero, 11=diciembre
+    return new Date(año, mes, 0).getDate();
+  };
+
+  // Actualizar días disponibles cuando cambia mes o año
+  useEffect(() => {
+    if (selectedFechaMes && selectedFecha365Dias) {
+      const mes = parseInt(selectedFechaMes);
+      const año = parseInt(selectedFecha365Dias);
+      const numDias = getDiasEnMes(mes, año);
+      const dias = Array.from({ length: numDias }, (_, i) => i + 1);
+      setDiasDisponibles(dias);
+      
+      // Si el día seleccionado es mayor que los días disponibles, resetear
+      if (parseInt(selectedFechaDia) > numDias) {
+        setSelectedFechaDia('');
+      }
+    } else {
+      setDiasDisponibles([]);
+    }
+  }, [selectedFechaMes, selectedFecha365Dias]);
+
    // Cargar bitácoras (sin filtros)
   const cargarBitacoras = async () => {
     try {
       setLoading(true);
       setError(null);
       const respuesta = await readBitacoraAcciones();
+      const a365diasRes = await get365DiasDisponiblesBitacora();
       
       if (respuesta.data) {
         setBitacoras(respuesta.data);
       } else {
         setError('Error al cargar las bitácoras');
+      }
+
+      // Manejar años disponibles (para mejorar el picker de años)
+      if (a365diasRes.success && a365diasRes.data) {
+        setA365DiasDisponibles(a365diasRes.data);
+        console.log(`Años disponibles: ${a365diasRes.data.length}`);
       }
     } catch (err) {
       setError('Error de conexión al cargar bitácoras');
@@ -97,6 +131,7 @@ export default function bitacoraAdmins() {
       if (respuesta.data) {
         setBitacoras(respuesta.data);
       } else {
+        window.alert('No se pudieron aplicar los filtros');
         Alert.alert('Error', 'No se pudieron aplicar los filtros');
       }
     } catch (err) {
@@ -286,9 +321,9 @@ export default function bitacoraAdmins() {
                         onValueChange={(itemValue) => setSelectedFechaDia(itemValue)}
                         >
                         <Picker.Item label="Día" value="" />
-                        {Array.from({ length: 31 }, (_, i) => i + 1).map((h) => (
-                                <Picker.Item key={h} label={`${h}`} value={h} />
-                            ))}
+                        {diasDisponibles.map((dia) => ( 
+                          <Picker.Item key={dia} label={`${dia}`} value={dia.toString()} />
+                        ))}
                         </Picker>
                 
                         <Picker
@@ -317,22 +352,9 @@ export default function bitacoraAdmins() {
                         onValueChange={(itemValue) => setSelectedFecha365Dias(itemValue)}
                         >
                         <Picker.Item label="Año" value="" />
-                        <Picker.Item label="2025" value="2025" />
-                        <Picker.Item label="2024" value="2024" />
-                        <Picker.Item label="2023" value="2023" />
-                        <Picker.Item label="2022" value="2022" />
-                        <Picker.Item label="2021" value="2021" />
-                        <Picker.Item label="2020" value="2020" />
-                        <Picker.Item label="2019" value="2019" />
-                        <Picker.Item label="2018" value="2018" />
-                        <Picker.Item label="2017" value="2017" />
-                        <Picker.Item label="2016" value="2016" />
-                        <Picker.Item label="2015" value="2015" />
-                        <Picker.Item label="2014" value="2014" />
-                        <Picker.Item label="2013" value="2013" />
-                        <Picker.Item label="2012" value="2012" />
-                        <Picker.Item label="2011" value="2011" />
-                        <Picker.Item label="2010" value="2010" />
+                        {a365DiasDisponibles.map((a) => (
+                          <Picker.Item key={a} label={`${a}`} value={a.toString()} />
+                        ))}
                         </Picker>
                     </ScrollView>
                 </View>

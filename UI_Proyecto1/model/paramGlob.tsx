@@ -1,9 +1,9 @@
 export type ParamGlob = {
-  idParam: Number;
-  duracionMaxima: Number;
-  antelacion: Number;
-  reservasSimultaneas: Boolean;
-  idEtiqueta: Number;
+  idParam: number;
+  duracionMaxima: number;
+  antelacion: number;
+  reservasSimultaneas: boolean;
+  idEtiqueta: number;
   canalesEnvio: string;
-  tiempoNotificar: Number;
+  tiempoNotificar: number;
 };

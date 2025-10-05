@@ -1,4 +1,4 @@
 export type Etiqueta = {
-  idEtiqueta: Number;
+  id: number;
   tag: string;
 };

@@ -8,7 +8,7 @@ import { Picker } from '@react-native-picker/picker';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { ScrollView, StyleSheet, Alert, ActivityIndicator, Platform } from 'react-native';
 
 import { 
   getReporteUsoGlobal,
@@ -21,8 +21,6 @@ import {
 
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 export default function reportesInstitucionalesAdmins() {
 
@@ -310,60 +308,37 @@ export default function reportesInstitucionalesAdmins() {
 
   const generarPDF = async () => {
     try {
-      const htmlContent = generarHTML(); // usa tu función dinámica
+      const htmlContent = generarHTML();
 
-      if (isWeb) {
-        // Crear un contenedor oculto para renderizar el HTML
-        const container = document.createElement("div");
-        container.innerHTML = htmlContent;
-        container.style.position = "absolute";
-        container.style.left = "-9999px";
-        container.style.width = "800px"; // ancho controlado
-        document.body.appendChild(container);
-
-        // Capturar el HTML como imagen escalada
-        const canvas = await html2canvas(container, {
-          scale: 2, // más resolución
-          useCORS: true,
-          backgroundColor: "#ffffff",
-        });
-
-        const imgData = canvas.toDataURL("image/png");
-
-        // Configurar PDF tamaño A4
-        const pdf = new jsPDF("p", "pt", "a4");
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-
-        const imgWidth = pdfWidth;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-        let heightLeft = imgHeight;
-        let position = 0;
-
-        // Primera página
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
-
-        // Agregar páginas extra si el contenido es largo
-        while (heightLeft > 0) {
-          position = heightLeft - imgHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-          heightLeft -= pdfHeight;
+      if (Platform.OS === 'web') {
+        // 📱 Web: Abrir el HTML en nueva ventana para imprimir
+        const newWindow = window.open();
+        if (newWindow) {
+          newWindow.document.write(htmlContent);
+          newWindow.document.close();
+          
+          // Esperar a que cargue el contenido antes de imprimir
+          newWindow.onload = () => {
+            newWindow.print();
+          };
+        } else {
+          Alert.alert("Error", "No se pudo abrir ventana de impresión. Permite ventanas emergentes.");
         }
-
-        pdf.save("reporte.pdf");
-        document.body.removeChild(container);
       } else {
-        // 📱 Móvil
-        const { uri } = await Print.printToFileAsync({ html: htmlContent });
+        // 📱 Móvil: Usar expo-print
+        const { uri } = await Print.printToFileAsync({ 
+          html: htmlContent,
+          base64: false 
+        });
         console.log("PDF generado:", uri);
 
         if (await Sharing.isAvailableAsync()) {
-          await Sharing.shareAsync(uri);
+          await Sharing.shareAsync(uri, { 
+            UTI: '.pdf', 
+            mimeType: 'application/pdf' 
+          });
         } else {
-          Alert.alert("PDF generado", `Ubicación: ${uri}`);
+          Alert.alert("PDF generado", `Archivo guardado en: ${uri}`);
         }
       }
     } catch (error) {

@@ -6,87 +6,217 @@ import { Card } from '@/components/ui/card';
 import { Picker } from '@react-native-picker/picker';
 
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, TextInput, Alert, Switch } from 'react-native';
+import { ScrollView, StyleSheet, TextInput, Alert, Switch, ActivityIndicator } from 'react-native';
+
+import { 
+  getConfiguracionParametros, 
+  guardarConfiguracionCompleta, 
+  actualizarEtiqueta,
+  readEtiquetas 
+} from '@/services/moduloAdmin_service';
+
+import { Etiqueta } from '@/model/etiqueta';
+import { ParamGlob } from '@/model/paramGlob';
 
 export default function configuracionParametrosAdmins() {
   
   const router = useRouter();
+
+  const isWeb = typeof window !== 'undefined' && window.document;
 
   const handleReturn = () => {
     // Redirige al inicio de sesion
       router.replace('/administradores/dashboard');
   };
 
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [etiquetas, setEtiquetas] = useState<Etiqueta[]>([]);
+  const [configuracionExistente, setConfiguracionExistente] = useState<ParamGlob | null>(null);
+
+  // Estados para parámetros
   const [maxDuration, setMaxDuration] = useState('1');
   const [minAntelation, setMinAntelation] = useState('1');
   const [allowSimultaneous, setAllowSimultaneous] = useState(false);
-
   const [etiqueta, setEtiqueta] = useState('Disponible');
+  const [etiquetaInput, setEtiquetaInput] = useState('');
   const [canalesEnvio, setCanalesEnvio] = useState('Directo');
   const [tiempoNotificacion, setTiempoNotificacion] = useState('0');
+  const [esEtiquetaNueva, setEsEtiquetaNueva] = useState(false);
 
-  // Guardar etiqueta: crear si es 'Nueva', modificar si es otra
-  const handleSaveEtiqueta = () => {
-    const isWeb = typeof window !== 'undefined' && window.document;
-    if (etiqueta === 'Nueva' || null) {
-      if (!etiqueta.trim() || etiqueta === 'Nueva') {
-        if (isWeb) {
-          window.alert('Por favor, ingrese el nombre de la nueva etiqueta en el campo de texto.');
-        } else {
-          Alert.alert('Aviso', 'Por favor, ingrese el nombre de la nueva etiqueta en el campo de texto.');
+  // Cargar configuración al montar el componente
+  useEffect(() => {
+    cargarConfiguracion();
+  }, []);
+
+  const cargarConfiguracion = async () => {
+    try {
+      setLoading(true);
+      const config = await getConfiguracionParametros();
+      console.log('Configuración recibida:', config);
+      
+      if (config.parametros && config.parametros.length > 0) {
+        const param = config.parametros[0]; // Tomamos el primer registro
+        setConfiguracionExistente(param);
+        
+        // Establecer valores desde la base de datos
+        setMaxDuration(param.duracionMaxima?.toString() || '1');
+        setMinAntelation(param.antelacion?.toString() || '1');
+        setAllowSimultaneous(param.reservasSimultaneas || false);
+        setCanalesEnvio(param.canalesEnvio || 'Directo');
+        setTiempoNotificacion(param.tiempoNotificar?.toString() || '0');
+        
+        // Buscar la etiqueta correspondiente
+        if (param.idEtiqueta && config.etiquetas.length > 0) {
+          const etiquetaEncontrada: Etiqueta | undefined = config.etiquetas.find(
+            (e: Etiqueta) => e.id === param.idEtiqueta
+          );
+          if (etiquetaEncontrada) {
+            setEtiqueta(etiquetaEncontrada.tag);
+            setEtiquetaInput(etiquetaEncontrada.tag);
+          }
         }
-        return;
       }
-      // Lógica para crear nueva etiqueta
-      if (isWeb) {
-        window.alert(`Etiqueta creada: ${etiqueta}`);
-      } else {
-        Alert.alert('Etiqueta creada', `Etiqueta creada: ${etiqueta}`);
-      }
-      console.log('Creando nueva etiqueta:', etiqueta);
-    } else {
-      // Lógica para modificar etiqueta existente
-      if (isWeb) {
-        window.alert(`Etiqueta modificada: ${etiqueta}`);
-      } else {
-        Alert.alert('Etiqueta modificada', `Etiqueta modificada: ${etiqueta}`);
-      }
-      console.log(`Modificando etiqueta a: ${etiqueta}`);
+      
+      setEtiquetas(config.etiquetas);
+    } catch (error) {
+      console.error('Error cargando configuración:', error);
+      Alert.alert('Error', 'No se pudo cargar la configuración');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleModify = () => {
-    // Recoge los valores actuales de los estados
-    const config = {
-      maxDuration,
-      minAntelation,
-      allowSimultaneous,
-      etiqueta,
-      canalesEnvio,
-      tiempoNotificacion,
-    };
+  // Manejar cambio en el picker de etiquetas
+  const handleEtiquetaChange = (itemValue: string): void => {
+    setEtiqueta(itemValue);
+    if (itemValue === 'Nueva') {
+      setEsEtiquetaNueva(true);
+      setEtiquetaInput('');
+    } else {
+      setEsEtiquetaNueva(false);
+      setEtiquetaInput(itemValue);
+      
+      // Si selecciona una etiqueta existente, buscar su ID
+      const etiquetaSeleccionada: Etiqueta | undefined = etiquetas.find(
+        (e: Etiqueta) => e.tag === itemValue
+      );
+      if (etiquetaSeleccionada) {
+        console.log('Etiqueta seleccionada:', etiquetaSeleccionada);
+      }
+    }
+  };
 
-    // Validar canal de envío
-    const isWeb = typeof window !== 'undefined' && window.document;
-    if (canalesEnvio === 'Correo') {
-      if (isWeb) {
-        window.alert('El canal de envío "Correo" no está disponible aún. Seleccione otro canal.');
+  // Guardar etiqueta: crear si es 'Nueva', modificar si es otra
+  const handleSaveEtiqueta = async () => {
+    if (!etiquetaInput.trim()) {
+      window.alert('Por favor, ingrese el nombre de la etiqueta.');
+      Alert.alert('Aviso', 'Por favor, ingrese el nombre de la etiqueta.');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      
+      if (esEtiquetaNueva) {
+        // Crear nueva etiqueta
+        await actualizarEtiqueta({
+          idEtiqueta: 0,
+          tag: etiquetaInput
+        });
+        window.alert('Etiqueta creada: ' + etiquetaInput);
+        Alert.alert('Éxito', `Etiqueta creada: ${etiquetaInput}`);
+        
+        // Recargar etiquetas
+        const nuevasEtiquetas = await readEtiquetas();
+        setEtiquetas(nuevasEtiquetas.data || []);
+        setEsEtiquetaNueva(false);
+        setEtiqueta(etiquetaInput);
       } else {
+        // Modificar etiqueta existente
+        const etiquetaExistente = etiquetas.find(e => e.tag === etiqueta);
+        if (etiquetaExistente) {
+          await actualizarEtiqueta({
+            idEtiqueta: etiquetaExistente.id,
+            tag: etiquetaInput
+          });
+          window.alert('Etiqueta modificada: ' + etiquetaInput);
+          Alert.alert('Éxito', `Etiqueta modificada: ${etiquetaInput}`);
+          
+          // Actualizar lista local
+          setEtiquetas(prev => 
+            prev.map(e => 
+              e.id === etiquetaExistente.id 
+                ? { ...e, tag: etiquetaInput }
+                : e
+            )
+          );
+          setEtiqueta(etiquetaInput);
+        }
+      }
+    } catch (error) {
+      console.error('Error guardando etiqueta:', error);
+      Alert.alert('Error', 'No se pudo guardar la etiqueta');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleModify = async () => {
+    // Validar canal de envío
+    if (canalesEnvio === 'Correo') {
+      if (!isWeb) {
         Alert.alert('No disponible', 'El canal de envío "Correo" no está disponible aún. Seleccione otro canal.');
+      } else{
+        window.alert('El canal de envío "Correo" no está disponible aún. Seleccione otro canal.');
       }
       return;
     }
-    
-    // Mostrar aviso y guardar
-    if (isWeb) {
-      window.alert('Configuración guardada:\n' + JSON.stringify(config, null, 2));
-    } else {
-      Alert.alert('Configuración guardada', JSON.stringify(config, null, 2));
+
+    try {
+      setSaving(true);
+      
+      // Encontrar la etiqueta seleccionada
+      const etiquetaSeleccionada = etiquetas.find(e => e.tag === etiqueta);
+      
+      const configuracion = {
+        parametros: {
+          idParam: configuracionExistente?.idParam || null,
+          duracionMaxima: maxDuration,
+          antelacion: minAntelation,
+          reservasSimultaneas: allowSimultaneous,
+          idEtiqueta: etiquetaSeleccionada?.id,
+          canalesEnvio: canalesEnvio,
+          tiempoNotificar: tiempoNotificacion
+        },
+        etiqueta: {
+          esNueva: esEtiquetaNueva,
+          nombre: etiquetaInput
+        }
+      };
+
+      await guardarConfiguracionCompleta(configuracion);
+      
+      Alert.alert('Éxito', 'Configuración guardada correctamente');
+      console.log('Configuración guardada:', configuracion);
+    } catch (error) {
+      console.error('Error guardando configuración:', error);
+      Alert.alert('Error', 'No se pudo guardar la configuración');
+    } finally {
+      setSaving(false);
     }
-    console.log('Configuración guardada:', config);
   };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.centerContainer]}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text style={styles.loadingText}>Cargando configuración...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView 
@@ -177,11 +307,11 @@ export default function configuracionParametrosAdmins() {
                 selectedValue={etiqueta}
                 style={styles.picker}
                 dropdownIconColor="#000"
-                onValueChange={(itemValue) => setEtiqueta(itemValue)}
+                onValueChange={(itemValue) => handleEtiquetaChange(itemValue)}
                 >
-                <Picker.Item label="Disponible" value="Disponible" />
-                <Picker.Item label="No disponible" value="No disponible" />
-                <Picker.Item label="En mantenimiento" value="En mantenimiento" />
+                {etiquetas.map((etq: Etiqueta) => (
+                  <Picker.Item key={etq.id} label={etq.tag} value={etq.tag} />
+                ))}
                 <Picker.Item label="Nueva" value="Nueva" />
                 </Picker>
             </View>
@@ -195,8 +325,9 @@ export default function configuracionParametrosAdmins() {
                     style={styles.input}
                     placeholder="Modificar o crear etiqueta"
                     placeholderTextColor="#777"
-                    value={etiqueta}
-                    onChangeText={setEtiqueta}
+                    value={etiquetaInput}
+                    onChangeText={setEtiquetaInput}
+                    editable={!saving}
                 />
                 <Button 
                 variant="solid" 
@@ -205,6 +336,7 @@ export default function configuracionParametrosAdmins() {
                 className="bg-white" 
                 style={styles.searchButton}
                 onPress={handleSaveEtiqueta}
+                disabled={saving}
                 >
                 <ButtonText className="text-black">Guardar</ButtonText>
                 </Button>
@@ -270,6 +402,7 @@ export default function configuracionParametrosAdmins() {
                     action="primary"
                     className="bg-blue-500"
                     style={styles.modifyButton}
+                    disabled={saving}
                 >
                     <ButtonText className="text-white">Guardar Configuración</ButtonText>
                 </Button>
@@ -382,6 +515,18 @@ const styles = StyleSheet.create({
   tableContainer: {
     maxHeight: 1000, // espacio de elem mostrados sin scrollear
     width: '100%',
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffffff',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#666',
   },
   picker: {
     height: 40,

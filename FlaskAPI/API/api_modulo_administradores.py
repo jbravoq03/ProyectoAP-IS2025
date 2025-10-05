@@ -972,6 +972,68 @@ def buscar_bitacora():
         print(f"Error en buscar_bitacora: {e}")
         return "Error interno del servidor", 500
 
+# Endpoint para obtener años disponibles en las bitacoras
+@administradores_bp.route('/filtros/a365dias_disponibles_bitacora', methods=['GET'])
+def get_a365dias_disponibles_bitacora():
+    try:
+        print("Obteniendo años disponibles...")
+        
+        # Obtener datos de bitácora y solicitudes para extraer años
+        respuesta_bitacora = readBitAcciones()
+        respuesta_solicitudes = readSolicitudes()
+        
+        a365dias_set = set()
+        
+        # Extraer años de la bitácora
+        if respuesta_bitacora != 501:
+            for registro in respuesta_bitacora.data:
+                fecha = registro.get('fecha')
+                if fecha:
+                    try:
+                        if 'T' in fecha:
+                            fecha_obj = datetime.strptime(fecha.split('T')[0], '%Y-%m-%d')
+                        else:
+                            fecha_obj = datetime.strptime(fecha, '%Y-%m-%d')
+                        a365dias_set.add(fecha_obj.year)
+                    except Exception as e:
+                        print(f"Error parseando fecha bitácora {fecha}: {e}")
+                        continue
+        
+        # Extraer años de las solicitudes
+        if respuesta_solicitudes != 501:
+            for solicitud in respuesta_solicitudes.data:
+                fecha_soli = solicitud.get('fechaSoli')
+                if fecha_soli:
+                    try:
+                        if 'T' in fecha_soli:
+                            fecha_obj = datetime.strptime(fecha_soli.split('T')[0], '%Y-%m-%d')
+                        else:
+                            fecha_obj = datetime.strptime(fecha_soli, '%Y-%m-%d')
+                        a365dias_set.add(fecha_obj.year)
+                    except Exception as e:
+                        print(f"Error parseando fecha solicitud {fecha_soli}: {e}")
+                        continue
+        
+        # Convertir a lista y ordenar descendente
+        a365dias_lista = sorted(list(a365dias_set), reverse=True)
+        
+        # Si no hay años, usar el año actual como mínimo
+        if not a365dias_lista:
+            a365dias_lista = [datetime.now().year]
+
+        print(f"Años disponibles: {a365dias_lista}")
+        return jsonify({
+            "success": True,
+            "data": a365dias_lista
+        })
+        
+    except Exception as e:
+        print(f"Error en get_a365dias_disponibles: {e}")
+        return jsonify({
+            "success": False,
+            "error": "Error interno del servidor"
+        }), 500
+
 #-------------------------------------
 # Tabla de Reportes Intitucionales - Gestión de Reportes
 
@@ -1474,3 +1536,69 @@ def get_a365dias_disponibles():
             "success": False,
             "error": "Error interno del servidor"
         }), 500
+
+#-------------------------------------
+# Configuración del Sistema - Gestión de Parámetros y Etiquetas
+
+# Endpoint para obtener configuración completa
+@administradores_bp.route('/configuracion/read', methods=['GET'])
+def read_configuracion():
+    try:
+        # Obtener parámetros globales
+        respuesta_param = readParametrosGlob()
+        # Obtener etiquetas
+        respuesta_etiquetas = readEtiquetas()
+        print(f"Respuesta parámetros: {respuesta_param}")
+        print(f"Respuesta etiquetas: {respuesta_etiquetas}")
+
+        if respuesta_param != 501 and respuesta_etiquetas != 501:
+            return jsonify({
+                "parametros": respuesta_param.data,
+                "etiquetas": respuesta_etiquetas.data
+            })
+        else:
+            return "Error en la BD", 500
+    except Exception as e:
+        print(f"Error en read_configuracion: {e}")
+        return "Error interno del servidor", 500
+
+# Endpoint para guardar configuración completa
+@administradores_bp.route('/configuracion/update', methods=['POST'])
+def update_configuracion():
+    try:
+        entrada = request.get_json()
+        parametros = entrada.get("parametros", {})
+        
+        # Si no hay idParam, crear nuevo registro
+        if not parametros.get("idParam"):
+            respuesta = createParametrosGlob(
+                pDuracionMaxima=parametros.get("duracionMaxima"),
+                pAntelacion=parametros.get("antelacion"),
+                pReservasSimultaneas=parametros.get("reservasSimultaneas"),
+                pIdEtiqueta=parametros.get("idEtiqueta"),
+                pCanalesEnvio=parametros.get("canalesEnvio"),
+                pTiempoNotificar=parametros.get("tiempoNotificar")
+            )
+        else:
+            # Actualizar registro existente
+            respuesta = updateParametrosGlob(
+                pIdParam=parametros.get("idParam"),
+                pDuracionMaxima=parametros.get("duracionMaxima"),
+                pAntelacion=parametros.get("antelacion"),
+                pReservasSimultaneas=parametros.get("reservasSimultaneas"),
+                pIdEtiqueta=parametros.get("idEtiqueta"),
+                pCanalesEnvio=parametros.get("canalesEnvio"),
+                pTiempoNotificar=parametros.get("tiempoNotificar")
+            )
+        
+        if respuesta != 501:
+            return jsonify({
+                "success": True,
+                "data": respuesta.data
+            })
+        else:
+            return "Error en la BD", 500
+            
+    except Exception as e:
+        print(f"Error en update_configuracion: {e}")
+        return "Error interno del servidor", 500

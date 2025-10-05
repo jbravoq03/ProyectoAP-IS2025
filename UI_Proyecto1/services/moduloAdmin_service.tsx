@@ -251,6 +251,25 @@ export const buscarBitacora = async (filtros: any = {}): Promise<any> => {
   return res.json();
 };
 
+export const get365DiasDisponiblesBitacora = async (): Promise<any> => {
+  try {
+    const res = await fetch(`${API_URL}/filtros/a365dias_disponibles_bitacora`);
+    return res.json();
+  } catch (error) {
+    console.error('Error obteniendo 365 días disponibles:', error);
+    // Retornar años recientes por defecto
+    const currentYear = new Date().getFullYear();
+    const a365dias = [];
+    for (let i = currentYear; i >= currentYear - 5; i--) {
+      a365dias.push(i);
+    }
+    return {
+      success: false,
+      data: a365dias
+    };
+  }
+};
+
 // -------------------- REPORTES INSTITUCIONALES --------------------
 export const getReporteUsoGlobal = async (filtros: any = {}): Promise<any> => {
   const params = new URLSearchParams();
@@ -371,5 +390,43 @@ export const get365DiasDisponibles = async (): Promise<any> => {
       success: false,
       data: a365dias
     };
+  }
+};
+
+// -------------------- CONFIGURACIÓN PARÁMETROS --------------------
+export const getConfiguracionParametros = async (): Promise<any> => {
+  try {
+    const res = await fetch(`${API_URL}/configuracion/read`);
+    return res.json();
+  } catch (error) {
+    console.error('Error obteniendo configuración:', error);
+    throw error;
+  }
+};
+
+export const guardarConfiguracionCompleta = async (configuracion: any) => {
+  try {
+    const res = await fetch(`${API_URL}/configuracion/update`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(configuracion),
+    });
+    return res.json();
+  } catch (error) {
+    console.error('Error guardando configuración:', error);
+    throw error;
+  }
+};
+
+export const actualizarEtiqueta = async (etiqueta: any) => {
+  try {
+    if (etiqueta.idEtiqueta && etiqueta.idEtiqueta > 0) {
+      return await updateEtiqueta(etiqueta);
+    } else {
+      return await createEtiqueta(etiqueta);
+    }
+  } catch (error) {
+    console.error('Error actualizando etiqueta:', error);
+    throw error;
   }
 };
