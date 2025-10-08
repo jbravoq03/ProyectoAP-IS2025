@@ -64,6 +64,7 @@ export default function loginScreen() {
 
     const resMateriales = await readMateriales();
     setMateriales(resMateriales.data);
+    
 
     if (rolNombre.includes("laboratorio")) {
       router.replace("/laboratorios/dashboard");
