@@ -1,9 +1,9 @@
 import { DptoCarrera } from "@/model/dptocar";
+import { Etiqueta } from "@/model/etiqueta";
 import { ParamGlob } from "@/model/paramGlob";
 import { Rol } from "@/model/roles";
-import { Etiqueta } from "@/model/etiqueta";
 
-const API_URL = "http://localhost:5000/administradores";
+const API_URL = "http://10.0.2.2:5000/administradores";
 
 // -------------------- STATUS --------------------
 export const checkStatusAdministradores = async (): Promise<string> => {

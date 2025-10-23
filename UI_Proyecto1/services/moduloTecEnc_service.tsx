@@ -2,7 +2,7 @@ import { BitAccion } from "@/model/bitacAcciones";
 import { bitacoraRec } from "@/model/bitacoraRecursos";
 import { Solicitud } from "@/model/solicitudes";
 
-const API_URL = "http://localhost:5000/tecnicencar";
+const API_URL = "http://10.0.2.2:5000/tecnicencar";
 
 // -------------------- STATUS --------------------
 export const checkStatusTecnicEncar = async (): Promise<string> => {

@@ -5,7 +5,7 @@ import { RecursoFijo } from "@/model/recFijos";
 import { Recurso } from "@/model/recursos";
 import { Responsable } from "@/model/responsables";
 
-const API_URL = "http://localhost:5000/laboratorios";
+const API_URL = "http://10.0.2.2:5000/laboratorios";
 
 // -------------------- STATUS --------------------
 export const checkStatusLaboratorios = async (): Promise<string> => {
