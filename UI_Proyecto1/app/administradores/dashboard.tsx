@@ -1,19 +1,19 @@
 import { View } from '@/components/Themed';
 import { Button, ButtonText } from '@/components/ui/button';
 
-import { Text } from '@/components/ui/text';
 import { Card } from '@/components/ui/card';
+import { Text } from '@/components/ui/text';
 
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
-import { Image, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, ScrollView, StyleSheet } from 'react-native';
 
-import { 
-  getReservasTotales, 
-  getMantenimientosActivos, 
-  getRecursosMasUsados 
+import {
+  getMantenimientosActivos,
+  getRecursosMasUsados,
+  getReservasTotales
 } from '@/services/moduloAdmin_service';
 
 export default function dashboardAdmins() {
@@ -364,6 +364,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 10,
     marginTop: 20,
+    backgroundColor : '#ffff',
   },
   filterTitle: {
     fontSize: 16,
@@ -379,6 +380,7 @@ const styles = StyleSheet.create({
     width: '100%',
     marginVertical: 10,
     paddingHorizontal: 10,
+    backgroundColor : '#ffff',
   },
   filterBox: {
     flex: 1,
@@ -415,6 +417,7 @@ const styles = StyleSheet.create({
   tableContainer: {
     maxHeight: 1000, // espacio de elem mostrados sin scrollear
     width: 550,
+    backgroundColor : '#ffff',
   },
   tableRow: {
     flexDirection: 'row',
@@ -422,6 +425,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
     paddingHorizontal: 10,
+    backgroundColor : '#ffff',
   },
   tableCellLeft: {
     fontSize: 14,

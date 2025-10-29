@@ -1,18 +1,18 @@
 import { View } from '@/components/Themed';
 import { Button, ButtonText } from '@/components/ui/button';
 
-import { Text } from '@/components/ui/text';
 import { Card } from '@/components/ui/card';
+import { Text } from '@/components/ui/text';
 import { Picker } from '@react-native-picker/picker';
 
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, TextInput, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 
-import { readUsuarios, updateRolUsuario, buscarUsuarios, readRoles } from '@/services/moduloAdmin_service';
-import { usuario } from '@/model/usuarios';
 import { Rol } from '@/model/roles';
+import { usuario } from '@/model/usuarios';
+import { buscarUsuarios, readRoles, readUsuarios, updateRolUsuario } from '@/services/moduloAdmin_service';
 
 export default function gestionusuariosAdmins() {
 
@@ -417,6 +417,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 10,
     marginTop: 20,
+    backgroundColor: '#fff',
   },
   filterTitle: {
     fontSize: 16,
@@ -424,6 +425,7 @@ const styles = StyleSheet.create({
     color: '#000',
     textAlign: 'center',
     marginRight: 15,
+    backgroundColor: '#fff',
   },
   filterContainer: {
     flexDirection: 'row',
@@ -432,6 +434,7 @@ const styles = StyleSheet.create({
     width: '100%',
     marginVertical: 10,
     paddingHorizontal: 10,
+    backgroundColor: '#fff',
   },
   input: {
     height: 40,
@@ -457,6 +460,7 @@ const styles = StyleSheet.create({
   tableContainer: {
     maxHeight: 1000, // espacio de elem mostrados sin scrollear
     width: '100%',
+    backgroundColor : '#ffff',
   },
   // 🔹 ESTILOS MEJORADOS PARA LA TABLA
   tableHeader: {
@@ -482,6 +486,7 @@ const styles = StyleSheet.create({
     color: '#000',
     paddingVertical: 12, // Mismo padding vertical
     textAlign: 'left',
+    backgroundColor : '#ffff',
   },
   headerCellEmail: {
     flex: 2,
@@ -491,6 +496,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     textAlign: 'left',
     paddingLeft: 10,
+    backgroundColor : '#ffff',
   },
   headerCellRole: {
     flex: 1,
@@ -500,6 +506,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     textAlign: 'left',
     paddingLeft: 10,
+    backgroundColor : '#ffff',
   },
   
   // 🔹 TABLE CELLS - MISMOS FLEX QUE EL HEADER
@@ -509,6 +516,7 @@ const styles = StyleSheet.create({
     color: '#000',
     paddingVertical: 12, // Mismo padding que header
     textAlign: 'left',
+    backgroundColor : '#ffff',
   },
   tableCellEmail: {
     flex: 2,
@@ -517,6 +525,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     textAlign: 'left',
     paddingLeft: 10,
+    backgroundColor : '#ffff',
   },
   tableCellRole: {
     flex: 1,
@@ -525,6 +534,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     textAlign: 'left',
     paddingLeft: 10,
+    backgroundColor : '#ffff',
   },
   
   verticalSeparator: {

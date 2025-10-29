@@ -1,16 +1,16 @@
 import { View } from '@/components/Themed';
 import { Button, ButtonText } from '@/components/ui/button';
 
-import { Text } from '@/components/ui/text';
 import { Card } from '@/components/ui/card';
+import { Text } from '@/components/ui/text';
 import { Picker } from '@react-native-picker/picker';
 
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Alert, ActivityIndicator, TextInput } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, TextInput } from 'react-native';
 
-import { readBitacoraAcciones, buscarBitacora, get365DiasDisponiblesBitacora } from '@/services/moduloAdmin_service';
+import { buscarBitacora, get365DiasDisponiblesBitacora, readBitacoraAcciones } from '@/services/moduloAdmin_service';
 
 export default function bitacoraAdmins() {
 
@@ -534,6 +534,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     textAlign: 'left',
     paddingLeft: 10, // Ajuste para alineación
+    backgroundColor : '#ffff',
   },
   headerCellDate: {
     flex: 1,
@@ -543,6 +544,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     textAlign: 'left',
     paddingLeft: 10,
+    backgroundColor : '#ffff',
   },
   headerCellAction: {
     flex: 1,
@@ -552,6 +554,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     textAlign: 'left',
     paddingLeft: 10,
+    backgroundColor : '#ffff',
   },
   headerCellDescripcion: {
     flex: 2, // Reducido de 3 a 2
@@ -561,6 +564,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     textAlign: 'left',
     paddingLeft: 10,
+    backgroundColor : '#ffff',
   },
   
   // 🔹 CELDAS NORMALES
@@ -570,6 +574,7 @@ const styles = StyleSheet.create({
     color: '#000',
     paddingVertical: 12, // Mismo padding que header
     textAlign: 'left',
+    backgroundColor : '#ffff',
   },
   tableCellModule: {
     flex: 2,
@@ -578,6 +583,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     textAlign: 'left',
     paddingLeft: 10,
+    backgroundColor : '#ffff',
   },
   tableCellDate: {
     flex: 1,
@@ -586,6 +592,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     textAlign: 'left',
     paddingLeft: 10,
+    backgroundColor : '#ffff',
   },
   tableCellAction: {
     flex: 1,
@@ -594,6 +601,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     textAlign: 'left',
     paddingLeft: 10,
+    backgroundColor : '#ffff',
   },
   tableCellDescripcion: {
     flex: 2, // Reducido de 3 a 2
@@ -602,6 +610,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     textAlign: 'left',
     paddingLeft: 10,
+    backgroundColor : '#ffff',
   },
   
   verticalSeparator: {
