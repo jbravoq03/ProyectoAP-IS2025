@@ -1,8 +1,8 @@
-import { router } from "expo-router";
-import { ArrowLeftIcon, Icon } from "@/components/ui/icon";
-import React, { useMemo, useState } from "react";
-import { ScrollView, Image , StyleSheet, Text, View} from 'react-native';
 import { Button, ButtonText } from '@/components/ui/button';
+import { ArrowLeftIcon, Icon } from "@/components/ui/icon";
+import { router } from "expo-router";
+import React from "react";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 /* ===== Tipos ===== */
 export type HistItem = {
@@ -38,90 +38,83 @@ export default function LabHistory({
       : [...items, ...Array.from({ length: minRows - items.length }, () => null)];
 
   return (
-    <div className="min-h-[100dvh] bg-white p-6">
-      
-      <Text style={styles.header}>
-          Sistema de Gestión de Laboratorios Académicos del Tecnológico de Costa Rica
-      </Text>
-      <View style={styles.line } />
+    <ScrollView style={{ flex: 1, padding: 16, backgroundColor: '#F3F4F6' }} contentContainerStyle={{ paddingBottom: 16 }}>
+    {/* Header principal */}
+    <Text style={styles.header}>
+      Sistema de Gestión de Laboratorios Académicos del Tecnológico de Costa Rica
+    </Text>
+    <View style={styles.line} />
 
-      <View style={{ 
-        flexDirection: 'row',   // horizontal (por defecto es column)
-        justifyContent: 'center', // centra horizontalmente
-        alignItems: 'center',     // centra verticalmente
-        marginVertical: 20,       // opcional, separación arriba/abajo
-      }}>
-        <Button variant="solid" onPress={handleLaboratorios} style={{backgroundColor: "#ffffffff", 
-                                        borderColor: "#000000", 
-                                        borderWidth: 2,
-                                        width: 200,
-                                        justifyContent: 'center',
-                                        }} size="sm" action="primary">
+    {/* Botón Volver */}
+    <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginVertical: 20 }}>
+      <Button
+        variant="solid"
+        onPress={handleLaboratorios}
+        style={{
+          backgroundColor: '#fff',
+          borderColor: '#000',
+          borderWidth: 2,
+          width: 200,
+          justifyContent: 'center',
+        }}
+        size="sm"
+        action="primary"
+      >
+        <Icon as={ArrowLeftIcon} color="#000" size="sm" style={{ marginRight: 8 }} />
+        <ButtonText>Volver al Dashboard</ButtonText>
+      </Button>
+    </View>
 
-            <Icon  as={ArrowLeftIcon} color='#000000ff' size="sm" className="mr-2" />
-            <ButtonText>Volver al Dashboard</ButtonText>
-        </Button>
-
+    {/* Contenedor de tabla */}
+    <View style={{ flex: 1, maxWidth: 768, alignSelf: 'center', backgroundColor: '#F3F4F6' }}>
+      {/* Header de la tabla */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, backgroundColor: '#F3F4F6' }}>
+        <Text style={{ fontSize: 24, fontWeight: '600', color: '#111827', backgroundColor: '#F3F4F6' }}>{title}</Text>
+        {onBack && (
+          <TouchableOpacity
+            onPress={onBack}
+            style={{
+              height: 36,
+              width: 36,
+              borderRadius: 18,
+              borderWidth: 1,
+              borderColor: '#D1D5DB',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Text style={{ fontSize: 18 }}>←</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
-      {/*scroll view*/}
-      <div className="mx-auto w-full max-w-4xl p-6 flex flex-col min-h-0">
-        <div className="w-full"></div>
-          {/* Contenedor centrado */}
-          <div className="mx-auto w-full max-w-4xl">
-            {/* Header */}
-            <div className="mb-4 flex items-center justify-between">
-              <h1 className="text-3xl font-semibold text-gray-900">{title}</h1>
+      {/* Tabla simulada */}
+      <View style={{ borderRadius: 16, borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#fff', overflow: 'hidden' }}>
+        {/* Header fila */}
+        <View style={{ flexDirection: 'row', backgroundColor: '#F3F4F6', paddingVertical: 8 }}>
+          <Text style={{ flex: 1, paddingHorizontal: 8, fontWeight: '600', fontSize: 14, backgroundColor: '#F3F4F6' }}>Acción</Text>
+          <Text style={{ flex: 2, paddingHorizontal: 8, fontWeight: '600', fontSize: 14, backgroundColor: '#F3F4F6' }}>Descripción</Text>
+          <Text style={{ flex: 1, paddingHorizontal: 8, fontWeight: '600', fontSize: 14, backgroundColor: '#F3F4F6' }}>Fecha</Text>
+        </View>
 
-              {onBack && (
-                <button
-                  type="button"
-                  onClick={onBack}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50"
-                  aria-label="Volver"
-                  title="Volver"
-                >
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor">
-                    <path d="M15 18l-6-6 6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
-              )}
-            </div>
-
-            {/* Tabla */}
-            <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-              <table className="w-full border-separate border-spacing-0">
-                <thead className="bg-gray-100">
-                  <tr className="text-left text-sm text-gray-700">
-                    <Th>Acción</Th>
-                    <Th>Descripción</Th>
-                    <Th>Fecha</Th>
-                  </tr>
-                </thead>
-                <tbody className="text-sm">
-                  {padded.map((row, idx) => (
-                    <tr key={idx} className="odd:bg-white even:bg-gray-50">
-                      {row ? (
-                        <>
-                          <Td>{row.accion}</Td>
-                          <Td>{row.descripcion}</Td>
-                          <Td>{row.fecha}</Td>
-                        </>
-                      ) : (
-                        <>
-                          <Td>…</Td>
-                          <Td>…</Td>
-                          <Td>…</Td>
-                        </>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-    </div>
+        {/* Filas de datos */}
+        {padded.map((row, idx) => (
+          <View
+            key={idx}
+            style={{
+              flexDirection: 'row',
+              backgroundColor: '#F3F4F6',
+              paddingVertical: 8,
+            }}
+          >
+            <Text style={{ flex: 1, paddingHorizontal: 8 }}>{row?.accion || '…'}</Text>
+            <Text style={{ flex: 2, paddingHorizontal: 8 }}>{row?.descripcion || '…'}</Text>
+            <Text style={{ flex: 1, paddingHorizontal: 8 }}>{row?.fecha || '…'}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  </ScrollView>
   );
 }
 
@@ -178,6 +171,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     color: '#000',
+    backgroundColor: '#ffffffff',
   },
   title: {
     fontSize: 20,
@@ -188,6 +182,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     borderBottomWidth: 2,
     borderBottomColor: '#000',
+    backgroundColor: '#ffffffff',
   },
   separator: {
     marginVertical: 30,
@@ -205,6 +200,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 80,
     paddingRight: 110,
+    
   },
   tableContent: {
     backgroundColor: "#ffffff", 

@@ -1,8 +1,8 @@
-import { router } from "expo-router";
-import { ArrowLeftIcon, Icon } from "@/components/ui/icon";
-import React, { useMemo, useState } from "react";
-import { ScrollView, Image , StyleSheet, Text, View} from 'react-native';
 import { Button, ButtonText } from '@/components/ui/button';
+import { ArrowLeftIcon, Icon } from "@/components/ui/icon";
+import { router } from "expo-router";
+import React, { useMemo, useState } from "react";
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 const SOLICITUDES: Solicitud[] = [
   { fecha: "2025-09-29", inicio: "08:00", fin: "10:00" },
@@ -99,9 +99,8 @@ export default function AvailabilityCalendar({
       };
 
   return (
-    //Wrapper a pantalla completa
-    <div className="h-[100dvh] min-h-[100dvh] flex flex-col bg-white">
-
+  
+    <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <Text style={styles.header}>
           Sistema de Gestión de Laboratorios Académicos del Tecnológico de Costa Rica
       </Text>
@@ -126,101 +125,65 @@ export default function AvailabilityCalendar({
 
       </View>
 
+      <ScrollView contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 16 }}>
+        {/* Título calendario */}
+        <Text style={styles.calendarTitle}>Calendario de disponibilidad</Text>
+        <Text style={styles.calendarSubtitle}>
+          • Días marcados <Text style={styles.dot}>•</Text> indican que el laboratorio está reservado.
+        </Text>
 
-      {/*scroll view*/}
-      <main className="flex-1 overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+16px)]">
-        <div className="mx-auto w-full max-w-4xl p-6 flex flex-col min-h-0">
-          {/* Header de la página */}
-          <div className="mb-2 flex items-center justify-between">
-            <h1 className="text-3xl font-semibold text-gray-800">
-              Calendario de disponibilidad
-            </h1>
-          </div>
+        {/* Mes */}
+        <Text style={styles.monthLabel}>{monthLabel}</Text>
 
-          <p className="mb-4 text-sm text-gray-600">
-            • Días marcados (<span className="inline-block h-2 w-2 rounded-full bg-red-500 align-middle" />)
-            indican que el laboratorio está reservado.
-          </p>
+        {/* Días de la semana */}
+        <View style={styles.weekRow}>
+          {weekLabels.map(w => (
+            <Text key={w} style={styles.weekDay}>{w.toUpperCase()}</Text>
+          ))}
+        </View>
 
-          {/* Título del mes */}
-          <div className="mb-2 text-sm uppercase tracking-wide text-gray-500">
-            {monthLabel}
-          </div>
+        {/* Grilla de días */}
+        <View style={styles.grid}>
+          {days.map(({ date, inMonth }, i) => {
+            const k = ymd(date);
+            const isWeekend = dowMon0(date) >= 5;
+            const hasReservations = index.has(k);
+            const reservations = index.get(k) || [];
+            const title = reservations.length
+              ? reservations.map(r => `${r.inicio}–${r.fin}`).join(" · ")
+              : "";
 
-          {/* Cabecera de días */}
-          <div className="grid grid-cols-7 gap-y-2 text-center text-xs text-gray-500">
-            {weekLabels.map((w) => (
-              <div key={w} className="uppercase">{w}</div>
-            ))}
-          </div>
+            return (
+              <View key={k + i} style={styles.dayCell}>
+                <Text style={{
+                  fontSize: 14,
+                  color: !inMonth ? '#A0AEC0' : isWeekend ? '#F56565' : '#1A202C',
+                }}>
+                  {date.getDate()}
+                </Text>
+                {hasReservations && (
+                  <View style={styles.dotReserved} />
+                )}
+              </View>
+            );
+          })}
+        </View>
 
-          {/* Contenedor flexible para la grilla + navegación */}
-          <section className="mt-1 flex flex-col flex-1 min-h-0">
-            {/* Grilla de días: 6 filas fijas y ocupa el espacio disponible */}
-            <div className="grid grid-cols-7 grid-rows-6 gap-y-5 text-center flex-1">
-              {days.map(({ date, inMonth }, i) => {
-                const k = ymd(date);
-                const isWeekend = dowMon0(date) >= 5;
-                const hasReservations = index.has(k);
-                const reservations = index.get(k) || [];
-                const title = reservations.length
-                  ? reservations.map((r) => `${r.inicio}–${r.fin}`).join(" · ")
-                  : "";
+        {/* Navegación */}
+        <View style={styles.navRow}>
+          <Button variant="outline" onPress={() => goto(-1)}>
+            <Text>{"<"} Anterior</Text>
+          </Button>
+          <Button variant="outline" onPress={() => goto(1)}>
+            <Text>Siguiente {">"}</Text>
+          </Button>
+        </View>
+      </ScrollView>
+    </View>
 
-                return (
-                  <div key={k + i} className="relative">
-                    <span
-                      className={[
-                        "text-sm",
-                        inMonth ? "text-gray-800" : "text-gray-400",
-                        isWeekend && inMonth ? "text-red-500" : "",
-                        "select-none",
-                      ].join(" ")}
-                      title={title}
-                    >
-                      {date.getDate()}
-                    </span>
 
-                    {hasReservations && (
-                      <span
-                        className="absolute left-1/2 top-5 -mt-0.5 -translate-x-1/2 rounded-full bg-red-500"
-                        style={{ width: 6, height: 6 }}
-                        title={title}
-                      />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
 
-            {/* Navegación: pegada al fondo del main */}
-            <div className="mt-6 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => goto(-1)}
-                className="inline-flex items-center gap-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50 text-gray-800"
-              >
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor">
-                  <path d="M15 18l-6-6 6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                Anterior
-              </button>
-
-              <button
-                type="button"
-                onClick={() => goto(1)}
-                className="inline-flex items-center gap-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50 text-gray-800"
-              >
-                Siguiente
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor">
-                  <path d="M9 6l6 6-6 6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-            </div>
-          </section>
-        </div>
-      </main>
-    </div>
+      
   );
 }
 
@@ -300,5 +263,63 @@ const styles = StyleSheet.create({
   tableContent: {
     backgroundColor: "#ffffff", 
     color: "#000000",
-  }
+  },
+   dayCell: {
+    width: '14.28%',
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  dotReserved: {
+    position: 'absolute',
+    top: 20,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#F56565',
+  },
+   navRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
+  },
+    grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },calendarTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1A202C',
+    marginBottom: 4,
+  },
+  calendarSubtitle: {
+    fontSize: 14,
+    color: '#718096',
+    marginBottom: 8,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#F56565',
+  },
+    monthLabel: {
+    fontSize: 14,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    color: '#718096',
+    marginBottom: 8,
+  },
+  weekRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  weekDay: {
+    width: '14.28%',
+    textAlign: 'center',
+    fontSize: 12,
+    color: '#718096',
+  },
 });

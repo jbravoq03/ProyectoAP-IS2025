@@ -1,8 +1,8 @@
+import { Button, ButtonText } from '@/components/ui/button';
 import { ArrowLeftIcon, Icon } from "@/components/ui/icon";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { ScrollView, Image , StyleSheet, Text, View} from 'react-native';
-import { Button, ButtonText } from '@/components/ui/button';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 
 
@@ -80,110 +80,94 @@ const handleLaboratorios = () => {
 
       </View>
       
-      {/* scroll view */}
-      <View className="max-h-[70vh] overflow-y-auto pb-4">
-        <View className="w-full max-w-4x1 mx-auto">
+      {/* Scroll view */}
+      <ScrollView style={{ maxHeight: '70%', paddingBottom: 16 }}>
+        <View style={{ width: '100%', alignSelf: 'center' }}>
+          <View style={{ flex: 1, paddingHorizontal: 16, paddingBottom: 24 }}>
+            <Text style={{ fontSize: 24, fontWeight: '600', marginVertical: 12, color: '#1f2937' }}>
+              Equipo
+            </Text>
 
-          <main className="flex-1 overflow-y-auto px-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
-            <h1 className="text-3xl font-semibold my-4 text-gray-800">Equipo</h1>
-
-            <SectionCard title="Recursos fijos" className="text-gray-700">
-              <ScrollableTable maxHeightClass="max-h-72">
-                <thead className="sticky top-0 bg-white z-10">
-                  <tr className="text-sm text-gray-700">
-                    <Th>Código</Th>
-                    <Th>Recurso</Th>
-                    <Th>Estado</Th>
-                    <Th>Último Mantenimiento</Th>
-                  </tr>
-                </thead>
-                <tbody className="text-sm">
-                  {fixed.map((row, i) => (
-                    <tr key={i} className="odd:bg-white even:bg-gray-50">
-                        <Td>
-                            <span className="block w-full rounded-md bg-gray-50 px-3 py-2 text-gray-800">
-                                {row.codigo || "—"}
-                            </span>
-                        </Td>
-                        <Td>
-                            <span className="block w-full rounded-md bg-gray-50 px-3 py-2 text-gray-800">
-                                {row.recurso || "—"}
-                            </span>
-                        </Td>
-                        <Td>
-                            <span className="block w-full rounded-md bg-gray-50 px-3 py-2 text-gray-800">
-                                {row.estado || "—"}
-                            </span>
-                        </Td>
-                        <Td>
-                            <span className="block w-full rounded-md bg-gray-50 px-3 py-2 text-gray-800">
-                                {row.ultimoMantenimiento || "—"}
-                            </span>
-                        </Td>
-                    </tr>
+            {/* --- Recursos fijos --- */}
+            <SectionCard title="Recursos fijos">
+              <View style={{ borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 8, overflow: 'hidden' }}>
+                {/* Encabezado */}
+                <View style={{ flexDirection: 'row', backgroundColor: '#ffffff', borderBottomWidth: 1, borderColor: '#e5e7eb' }}>
+                  {['Código', 'Recurso', 'Estado', 'Último Mantenimiento'].map((header, i) => (
+                    <Text key={i} style={{ flex: 1, padding: 8, fontWeight: '600', color: '#374151' }}>
+                      {header}
+                    </Text>
                   ))}
+                </View>
 
-                  {/* fila punteada*/}
-                  <tr className="text-gray-400">
-                    <Td>…</Td>
-                    <Td>…</Td>
-                    <Td>…</Td>
-                    <Td>…</Td>
-                  </tr>
-                </tbody>
-              </ScrollableTable>
+                {/* Filas */}
+                {fixed.map((row, i) => (
+                  <View
+                    key={i}
+                    style={{
+                      flexDirection: 'row',
+                      backgroundColor: i % 2 === 0 ? '#ffffff' : '#f9fafb',
+                      borderBottomWidth: 1,
+                      borderColor: '#e5e7eb',
+                    }}
+                  >
+                    <Text style={styles.cell}>{row.codigo || '—'}</Text>
+                    <Text style={styles.cell}>{row.recurso || '—'}</Text>
+                    <Text style={styles.cell}>{row.estado || '—'}</Text>
+                    <Text style={styles.cell}>{row.ultimoMantenimiento || '—'}</Text>
+                  </View>
+                ))}
 
+                {/* Fila punteada */}
+                <View style={{ flexDirection: 'row', opacity: 0.4 }}>
+                  {Array(4).fill('…').map((dot, i) => (
+                    <Text key={i} style={styles.cell}>{dot}</Text>
+                  ))}
+                </View>
+              </View>
             </SectionCard>
 
-            <SectionCard title="Materiales consumibles" className="mt-6 text-gray-700">
-              <ScrollableTable maxHeightClass="max-h-72">
-                <thead className="sticky top-0 bg-white z-10">
-                  <tr className="text-sm text-gray-700">
-                    <Th>Material</Th>
-                    <Th>Cantidad</Th>
-                    <Th>Medida</Th>
-                    <Th>Punto de reorden</Th>
-                  </tr>
-                </thead>
-                <tbody className="text-sm">
-                  {consumables.map((row, i) => (
-                    <tr key={i} className="odd:bg-white even:bg-gray-50">
-                        <Td>
-                            <span className="block w-full rounded-md bg-gray-50 px-3 py-2 text-gray-800">
-                                {row.material || "—"}
-                            </span>
-                        </Td>
-                        <Td>
-                            <span className="block w-full rounded-md bg-gray-50 px-3 py-2 text-gray-800">
-                                {row.cantidad || "—"}
-                            </span>
-                        </Td>
-                        <Td>
-                            <span className="block w-full rounded-md bg-gray-50 px-3 py-2 text-gray-800">
-                                {row.medida || "—"}
-                            </span>
-                        </Td>
-                        <Td>
-                            <span className="block w-full rounded-md bg-gray-50 px-3 py-2 text-gray-800">
-                                {row.puntoReorden || "—"}
-                            </span>
-                        </Td>
-                    </tr>
+            {/* --- Materiales consumibles --- */}
+            <SectionCard title="Materiales consumibles" style={{ marginTop: 24, color: '#374151' }}>
+              <View style={{ borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 8, overflow: 'hidden' }}>
+                {/* Encabezado */}
+                <View style={{ flexDirection: 'row', backgroundColor: '#ffffff', borderBottomWidth: 1, borderColor: '#e5e7eb' }}>
+                  {['Material', 'Cantidad', 'Medida', 'Punto de reorden'].map((header, i) => (
+                    <Text key={i} style={{ flex: 1, padding: 8, fontWeight: '600', color: '#374151' }}>
+                      {header}
+                    </Text>
                   ))}
-                  <tr className="text-gray-400">
-                    <Td>…</Td>
-                    <Td>…</Td>
-                    <Td>…</Td>
-                    <Td>…</Td>
-                  </tr>
-                </tbody>
-              </ScrollableTable>
+                </View>
 
+                {/* Filas */}
+                {consumables.map((row, i) => (
+                  <View
+                    key={i}
+                    style={{
+                      flexDirection: 'row',
+                      backgroundColor: i % 2 === 0 ? '#ffffff' : '#f9fafb',
+                      borderBottomWidth: 1,
+                      borderColor: '#e5e7eb',
+                    }}
+                  >
+                    <Text style={styles.cell}>{row.material || '—'}</Text>
+                    <Text style={styles.cell}>{row.cantidad || '—'}</Text>
+                    <Text style={styles.cell}>{row.medida || '—'}</Text>
+                    <Text style={styles.cell}>{row.puntoReorden || '—'}</Text>
+                  </View>
+                ))}
+
+                {/* Fila punteada */}
+                <View style={{ flexDirection: 'row', opacity: 0.4 }}>
+                  {Array(4).fill('…').map((dot, i) => (
+                    <Text key={i} style={styles.cell}>{dot}</Text>
+                  ))}
+                </View>
+              </View>
             </SectionCard>
-          </main>
-
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -263,7 +247,13 @@ const styles = StyleSheet.create({
   tableContent: {
     backgroundColor: "#ffffff", 
     color: "#000000",
-  }
+  },
+  cell: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    color: '#1f2937',
+  },
 });
 
 /* ---------- Helpers & subcomponentes ---------- */
@@ -280,39 +270,30 @@ function updateRow<T>(
 function SectionCard({
   title,
   children,
-  className = "",
-}: React.PropsWithChildren<{ title: string; className?: string }>) {
+  style,
+}: React.PropsWithChildren<{ title: string; style?: any }>) {
   return (
-    <section className={`rounded-2xl border border-gray-200 bg-white p-4 shadow-sm ${className}`}>
-      <h2 className="text-xl font-semibold mb-2">{title}</h2>
-      <View className="border-t border-gray-200 pt-3">{children}</View>
-    </section>
-  );
-}
-
-function ScrollableTable({
-  children,
-  maxHeightClass = "max-h-72",
-}: React.PropsWithChildren<{ maxHeightClass?: string }>) {
-  return (
-    <View className={`rounded-md border border-gray-200 overflow-hidden`}>
-      <View className={`${maxHeightClass} overflow-y-auto`}>
-        <table className="w-full border-separate border-spacing-0">
-          {children}
-        </table>
-      </View>
+    <View style={[{ borderRadius: 16, borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#fff', padding: 16, shadowColor: '#000', shadowOpacity: 0.05, shadowOffset: { width: 0, height: 2 }, shadowRadius: 4 }, style]}>
+      <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 8 }}>{title}</Text>
+      <View style={{ borderTopWidth: 1, borderTopColor: '#E5E7EB', paddingTop: 8 }}>{children}</View>
     </View>
   );
 }
 
-function Th({ children }: React.PropsWithChildren) {
+function ScrollableTable({ children, style }: React.PropsWithChildren<{ style?: any }>) {
   return (
-    <th className="text-left font-medium border-b border-gray-200 px-3 py-2">
-      {children}
-    </th>
+    <View style={{ borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB', overflow: 'hidden' }}>
+      <ScrollView style={[{ maxHeight: 180 }, style]}>
+        <View>{children}</View>
+      </ScrollView>
+    </View>
   );
 }
 
-function Td({ children }: React.PropsWithChildren) {
-  return <td className="border-b border-gray-200 px-3 py-2">{children}</td>;
+function Th({ children, style }: React.PropsWithChildren<{ style?: any }>) {
+  return <Text style={[{ fontWeight: '600', paddingVertical: 8, paddingHorizontal: 12 }, style]}>{children}</Text>;
+}
+
+function Td({ children, style }: React.PropsWithChildren<{ style?: any }>) {
+  return <Text style={[{ paddingVertical: 8, paddingHorizontal: 12 }, style]}>{children}</Text>;
 }

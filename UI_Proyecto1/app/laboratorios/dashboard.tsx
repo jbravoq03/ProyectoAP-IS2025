@@ -1,8 +1,8 @@
-import { View } from '@/components/Themed';
+import { Text, View } from '@/components/Themed';
 import { Button, ButtonText } from '@/components/ui/button';
-import { router, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, Image , StyleSheet} from 'react-native';
+import { Image, ScrollView, StyleSheet, TextInput } from 'react-native';
 
 
 type Responsible = {
@@ -60,19 +60,19 @@ export default function dashboardLabs({
 
   const handleChange =
     (field: keyof LaboratoryProfileValues) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setValues((v) => ({ ...v, [field]: e.target.value }));
+    (text: string) => {
+      setValues((v) => ({ ...v, [field]: text }));
     };
 
   const handleRespChange =
-    (idx: number, field: keyof Responsible) =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setValues((v) => {
-        const copy = [...v.responsables];
-        copy[idx] = { ...copy[idx], [field]: e.target.value };
-        return { ...v, responsables: copy };
-      });
-    };
+  (idx: number, field: keyof Responsible) =>
+  (text: string) => {
+    setValues((v) => {
+      const copy = [...v.responsables];
+      copy[idx] = { ...copy[idx], [field]: text };
+      return { ...v, responsables: copy };
+    });
+  };
 
   const addResponsible = () =>
     setValues((v) => ({
@@ -86,12 +86,9 @@ export default function dashboardLabs({
       responsables: v.responsables.filter((_, i) => i !== idx),
     }));
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const submit = () => {
     onSubmit?.(values);
-    // Si no pasas onSubmit, por defecto muestra en consola:
     if (!onSubmit) {
-      // eslint-disable-next-line no-console
       console.log("Perfil de laboratorio enviado:", values);
     }
   };
@@ -123,7 +120,7 @@ export default function dashboardLabs({
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={true}
-          contentContainerStyle={styles.horizontalContainer}
+          contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, gap: 8 }}
   
         >
           <Image
@@ -154,142 +151,175 @@ export default function dashboardLabs({
       {/* Fin Menú principal*/}
 
       {/* scroll view */}
-    <View className="max-h-[90vh] overflow-y-auto pb-4">
+      <ScrollView
+        style={{ maxHeight: '90%', backgroundColor: '#fff', }}
+        contentContainerStyle={{ paddingBottom: 16, backgroundColor: '#fff', }}
+      >
+        <View style={{ width: '100%', maxWidth: 768, alignSelf: 'center', backgroundColor: '#fff', }}>
+          <Text style={{ fontSize: 22, fontWeight: '600', marginBottom: 16, color: '#000', backgroundColor: '#fff', }}>
+            Perfil de laboratorio
+          </Text>
 
-      <View className="w-full max-w-4xl mx-auto">
-        <h1 className="text-2xl font-semibold mb-4 text-black">Perfil de laboratorio</h1>
-
-        <form
-          onSubmit={submit}
-          className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
-        >
-          {/* Nombre */}
-          <label className="block text-sm font-medium text-gray-700">
-            Nombre
-            <input
-              type="text"
+          {/* Formulario */}
+          <View
+            style={{
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor: '#E5E7EB',
+              backgroundColor: '#fff',
+              padding: 20,
+              shadowColor: '#000',
+              shadowOpacity: 0.05,
+              shadowOffset: { width: 0, height: 2 },
+              shadowRadius: 4,
+            }}
+          >
+            {/* Nombre */}
+            <Text style={{ fontSize: 14, fontWeight: '500', color: '#374151' }}>Nombre</Text>
+            <TextInput
               value={values.nombre}
-              onChange={handleChange("nombre")}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-black/20 bg-gray-50"
+              onChangeText={handleChange('nombre')}
               placeholder=""
+              style={styles.input}
             />
-          </label>
 
-          {/* Código */}
-          <label className="mt-4 block text-sm font-medium text-gray-700">
-            Código
-            <input
-              type="text"
+            {/* Código */}
+            <Text style={[styles.label, { marginTop: 16 }]}>Código</Text>
+            <TextInput
               value={values.codigo}
-              onChange={handleChange("codigo")}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-black/20 bg-gray-50"
+              onChangeText={handleChange('codigo')}
               placeholder=""
+              style={styles.input}
             />
-          </label>
 
-          {/* Ubicación */}
-          <label className="mt-4 block text-sm font-medium text-gray-700">
-            Ubicación y escuela/departamento asociado
-            <input
-              type="text"
+            {/* Ubicación */}
+            <Text style={[styles.label, { marginTop: 16 }]}>
+              Ubicación y escuela/departamento asociado
+            </Text>
+            <TextInput
               value={values.ubicacion}
-              onChange={handleChange("ubicacion")}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-black/20 bg-gray-50"
+              onChangeText={handleChange('ubicacion')}
               placeholder=""
+              style={styles.input}
             />
-          </label>
 
-          {/* Responsables */}
-          <View className="mt-4">
-            <span className="block text-sm font-medium text-gray-700">
-              Responsables
-            </span>
+            {/* Responsables */}
+            <View style={{ marginTop: 16, backgroundColor: '#fff', }}>
+              <Text style={styles.label}>Responsables</Text>
 
-            {/* Encabezados (visuales) */}
-            <View className="mt-2 hidden gap-3 text-xs text-gray-500 md:grid md:grid-cols-12">
-              <View className="md:col-span-4">Nombre</View>
-              <View className="md:col-span-5">Correo Institucional</View>
-              <View className="md:col-span-3">Teléfono</View>
-            </View>
-
-            <View className="mt-1 max-h-40 overflow-y-auto rounded-md border border-gray-200 p-2">
-              {values.responsables.map((r, idx) => (
-                <View
-                  key={idx}
-                  className="mb-2 grid grid-cols-1 gap-3 md:grid-cols-12"
-                >
-                  <input
-                    type="text"
-                    value={r.name}
-                    onChange={handleRespChange(idx, "name")}
-                    placeholder="Nombre"
-                    className="md:col-span-4 w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-black/20 bg-gray-50 text-gray-700"
-                  />
-                  <input
-                    type="email"
-                    value={r.email}
-                    onChange={handleRespChange(idx, "email")}
-                    placeholder="Correo Institucional"
-                    className="md:col-span-5 w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-black/20 bg-gray-50 text-gray-700"
-                  />
-                  <View className="md:col-span-3 flex gap-2">
-                    <input
-                      type="tel"
-                      value={r.phone}
-                      onChange={handleRespChange(idx, "phone")}
-                      placeholder="Teléfono"
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-black/20 bg-gray-50 text-gray-700"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeResponsible(idx)}
-                      className="shrink-0 rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-gray-200 bg-gray-50 text-gray-700"
-                      aria-label="Eliminar responsable"
-                    >
-                      ✕
-                    </button>
-                  </View>
-                </View>
-              ))}
-
-              <View className="mt-1">
-                <button
-                  type="button"
-                  onClick={addResponsible}
-                  className="rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-gray-200 text-gray-700"
-                >
-                  +
-                </button>
+              {/* Encabezado visual */}
+              <View
+                style={{
+                  marginTop: 8,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  paddingHorizontal: 4,
+                  backgroundColor: '#fff',
+                }}
+              >
+                <Text style={styles.headerSmall}>Nombre</Text>
+                <Text style={styles.headerSmall}>Correo</Text>
+                <Text style={styles.headerSmall}>Teléfono</Text>
               </View>
+
+              {/* Lista de responsables */}
+              <ScrollView
+                style={{
+                  marginTop: 8,
+                  maxHeight: 160,
+                  borderWidth: 1,
+                  borderColor: '#E5E7EB',
+                  borderRadius: 8,
+                  padding: 8,
+                }}
+              >
+                {values.responsables.map((r, idx) => (
+                  <View
+                    key={idx}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      marginBottom: 8,
+                      gap: 6,
+                      backgroundColor: '#fff',
+                    }}
+                  >
+                    <TextInput
+                      value={r.name}
+                      onChangeText={handleRespChange(idx, 'name')}
+                      placeholder="Nombre"
+                      style={[styles.input, { flex: 4 }]}
+                    />
+                    <TextInput
+                      value={r.email}
+                      onChangeText={handleRespChange(idx, 'email')}
+                      placeholder="Correo Institucional"
+                      keyboardType="email-address"
+                      style={[styles.input, { flex: 5 }]}
+                    />
+                    <View style={{ flex: 3, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fff', }}>
+                      <TextInput
+                        value={r.phone}
+                        onChangeText={handleRespChange(idx, 'phone')}
+                        placeholder="Teléfono"
+                        keyboardType="phone-pad"
+                        style={[styles.input, { flex: 1 }]}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onPress={() => removeResponsible(idx)}
+                        style={{ borderColor: '#D1D5DB', backgroundColor: '#F9FAFB' }}
+                      >
+                        <ButtonText>✕</ButtonText>
+                      </Button>
+                    </View>
+                  </View>
+                ))}
+
+                <View style={{ marginTop: 8 }}>
+                  <Button
+                    variant="outline"
+                    onPress={addResponsible}
+                    style={{ borderColor: '#D1D5DB', backgroundColor: '#F9FAFB' }}
+                  >
+                    <ButtonText>+</ButtonText>
+                  </Button>
+                </View>
+              </ScrollView>
+            </View>
+
+            {/* Políticas */}
+            <Text style={[styles.label, { marginTop: 16 }]}>Políticas de uso</Text>
+            <TextInput
+              value={values.politicas}
+              onChangeText={handleChange('politicas')}
+              placeholder=""
+              multiline
+              numberOfLines={3}
+              style={[styles.input, { textAlignVertical: 'top' }]}
+            />
+
+            {/* Botón Modificar */}
+            <View style={{ marginTop: 24 }}>
+              <Button
+                onPress={submit}
+                isDisabled={submitting}
+                style={{
+                  backgroundColor: '#000',
+                  borderRadius: 8,
+                  paddingVertical: 10,
+                  justifyContent: 'center',
+                }}
+              >
+                <ButtonText style={{ color: '#fff' }}>
+                  {submitting ? 'Guardando...' : 'Modificar'}
+                </ButtonText>
+              </Button>
             </View>
           </View>
-
-          {/* Políticas */}
-          <label className="mt-4 block text-sm font-medium text-gray-700">
-            Polticas de uso
-            <textarea
-              value={values.politicas}
-              onChange={handleChange("politicas")}
-              rows={3}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-black/20 bg-gray-50"
-              placeholder=""
-            />
-          </label>
-
-          {/* Botón Modificar */}
-          <View className="mt-6">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="rounded-md bg-black px-4 py-2 text-white hover:bg-black/90 disabled:opacity-60"
-            >
-              {submitting ? "Guardando..." : "Modificar"}
-            </button>
-          </View>
-        </form>
-      </View>
-
-    </View>
+        </View>
+      </ScrollView>
       
     </View>
   );
@@ -302,6 +332,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     maxWidth: '100%',
+    backgroundColor: '#fff',
   },
   horizontalContainer: {
   backgroundColor: '#fff',
@@ -322,11 +353,39 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
+    backgroundColor: '#fff',
   },
   separator: {
     marginVertical: 30,
     height: 1,
     width: '80%',
+    backgroundColor: '#fff',
+  },
+   label: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+    backgroundColor: '#fff',
+  },
+  headerSmall: {
+    fontSize: 12,
+    color: '#6B7280',
+    flex: 1,
+    textAlign: 'center',
+    backgroundColor: '#fff',
+  },
+  input: {
+    marginTop: 4,
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#F9FAFB',
+    fontSize: 14,
+    color: '#374151',
+    
   },
 });
 
